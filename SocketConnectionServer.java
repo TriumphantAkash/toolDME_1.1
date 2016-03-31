@@ -1,13 +1,16 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class SocketConnectionServer extends Thread{
 
 	Node node ;
+	public static HashMap<Integer,ObjectOutputStream> clientOS;
 
 	public SocketConnectionServer(Node node)
 	{

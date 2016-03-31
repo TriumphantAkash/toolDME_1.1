@@ -1,5 +1,6 @@
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class Node implements Serializable{
@@ -7,26 +8,26 @@ public class Node implements Serializable{
 	private int id;
 	private int portNumber;
 	private String hostname;
-	private ArrayList<Node> quorum;
+	private HashMap<Integer,Node> quorum;
 	private ArrayList<Node> queue;
 	private Node grantOwner;
 	private boolean grantFlag;
 	private boolean inquireFlag;
 	private int timestamp =1;
-	private ArrayList<Node> grant;
-	private ArrayList<Node> waitingForYield;
-	private ArrayList<Node> inquireQuorum;
-	private ArrayList<Node> failedList;
+	private HashMap<Integer,Node> grant;
+	private HashMap<Integer,Node> waitingForYield;
+	private HashMap<Integer,Node> inquireQuorum;
+	private HashMap<Integer,Node> failedList;
 	private int requestTimestamp =1;
 	public int[] vectorClock;
 	public Node()
 	{
-		grant = new ArrayList<Node>();
-		waitingForYield = new ArrayList<Node>();
-		inquireQuorum = new ArrayList<Node>();
-		failedList = new ArrayList<Node>();
+		grant = new HashMap<Integer,Node>();
+		waitingForYield = new HashMap<Integer,Node>();
+		inquireQuorum = new HashMap<Integer,Node>();
+		failedList = new HashMap<Integer,Node>();
 		queue = new ArrayList<Node>();
-		quorum = new ArrayList<Node>();
+		quorum = new HashMap<Integer,Node>();
 		
 	}
 	

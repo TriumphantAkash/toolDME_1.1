@@ -21,6 +21,7 @@ public class Main {
 	Node resource;
 	public static volatile boolean ackFromResourceForCSEnter = false;
 	public static volatile boolean ackFromResourceForCSExit = false;
+	public static HashMap<Integer, Client> clientThread;
 	
 	public Main()
 	{
