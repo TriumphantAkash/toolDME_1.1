@@ -14,10 +14,10 @@ public class Node implements Serializable{
 	private boolean grantFlag;
 	private boolean inquireFlag;
 	private int timestamp =1;
-	private HashMap<Integer,Node> grant;
-	private HashMap<Integer,Node> waitingForYield;
-	private HashMap<Integer,Node> inquireQuorum;
-	private HashMap<Integer,Node> failedList;
+	public HashMap<Integer,Node> grant;
+	public HashMap<Integer,Node> waitingForYield;
+	public HashMap<Integer,Node> inquireQuorum;
+	public HashMap<Integer,Node> failedList;
 	private int requestTimestamp =1;
 	public int[] vectorClock;
 	public Node()
@@ -135,8 +135,22 @@ public class Node implements Serializable{
 		this.failedList = failedList;
 	}
 	
-	
-	
+	public synchronized void deleteFromGrant(int id)
+	{
+		grant.remove(id);
+	}
+	public synchronized void deleteFromWaitingForYield(int id)
+	{
+		waitingForYield.remove(id);
+	}
+	public synchronized void deleteFromInquireQuorum(int id)
+	{
+		inquireQuorum.remove(id);
+	}
+	public synchronized void deleteFromFailedList(int id)
+	{
+		failedList.remove(id);
+	}
 	
 	
 }
