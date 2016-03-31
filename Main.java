@@ -39,7 +39,7 @@ public class Main {
 		m.resource.setHostname(args[2]);
 		m.resource.setPortNumber(Integer.parseInt(args[3]));
 
-		SocketConnectionServer server = new SocketConnectionServer(m.node);
+		SocketConnectionServer server = new SocketConnectionServer(m);
 		server.start();
 
 		try {

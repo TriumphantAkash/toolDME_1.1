@@ -9,12 +9,12 @@ import java.util.Iterator;
 
 public class SocketConnectionServer extends Thread{
 
-	Node node ;
+	Main m ;
 	public static HashMap<Integer,ObjectOutputStream> clientOS;
 
-	public SocketConnectionServer(Node node)
+	public SocketConnectionServer(Main m)
 	{
-		this.node = node;
+		this.m = m;
 	}
 
 	public void run()
