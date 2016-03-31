@@ -8,7 +8,7 @@ public class Node implements Serializable{
 	private int id;
 	private int portNumber;
 	private String hostname;
-	private HashMap<Integer,Node> quorum;
+	private ArrayList<Node> quorum;
 	private ArrayList<Node> queue;
 	private Node grantOwner;
 	private boolean grantFlag;
@@ -27,7 +27,7 @@ public class Node implements Serializable{
 		inquireQuorum = new HashMap<Integer,Node>();
 		failedList = new HashMap<Integer,Node>();
 		queue = new ArrayList<Node>();
-		quorum = new HashMap<Integer,Node>();
+		quorum = new ArrayList<Node>();
 		
 	}
 	
@@ -86,31 +86,6 @@ public class Node implements Serializable{
 	public void setTimestamp(int timestamp) {
 		this.timestamp = timestamp;
 	}
-	public ArrayList<Node> getGrant() {
-		return grant;
-	}
-	public void setGrant(ArrayList<Node> grant) {
-		this.grant = grant;
-	}
-
-	public ArrayList<Node> getWaitingForYield() {
-		return waitingForYield;
-	}
-	public void setWaitingForYield(ArrayList<Node> waitingForYield) {
-		this.waitingForYield = waitingForYield;
-	}
-	public ArrayList<Node> getInquireQuorum() {
-		return inquireQuorum;
-	}
-	public void setInquireQuorum(ArrayList<Node> inquireQuorum) {
-		this.inquireQuorum = inquireQuorum;
-	}
-	public ArrayList<Node> getFailedList() {
-		return failedList;
-	}
-	public void setFailedList(ArrayList<Node> failedList) {
-		this.failedList = failedList;
-	}
 
 	public int getRequestTimestamp() {
 		return requestTimestamp;
@@ -127,6 +102,39 @@ public class Node implements Serializable{
 	public void setVectorClock(int[] vectorClock) {
 		this.vectorClock = vectorClock;
 	}
+
+	public HashMap<Integer, Node> getGrant() {
+		return grant;
+	}
+
+	public void setGrant(HashMap<Integer, Node> grant) {
+		this.grant = grant;
+	}
+
+	public HashMap<Integer, Node> getWaitingForYield() {
+		return waitingForYield;
+	}
+
+	public void setWaitingForYield(HashMap<Integer, Node> waitingForYield) {
+		this.waitingForYield = waitingForYield;
+	}
+
+	public HashMap<Integer, Node> getInquireQuorum() {
+		return inquireQuorum;
+	}
+
+	public void setInquireQuorum(HashMap<Integer, Node> inquireQuorum) {
+		this.inquireQuorum = inquireQuorum;
+	}
+
+	public HashMap<Integer, Node> getFailedList() {
+		return failedList;
+	}
+
+	public void setFailedList(HashMap<Integer, Node> failedList) {
+		this.failedList = failedList;
+	}
+	
 	
 	
 	
