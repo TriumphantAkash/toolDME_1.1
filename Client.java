@@ -42,8 +42,10 @@ public class Client extends Thread{
 		 send.setDestinationNode(destinationNode);
 		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
 		 try {
+			//oos.reset();
 			oos.writeObject(send);
 			oos.flush();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -81,6 +81,8 @@ public class ClientListener extends Thread{
 				}
 				try {
 					this.msg = (Message)this.ois.readObject();
+//					Message test = (Message)this.ois.readObject();
+//					System.out.println("Nilesh " + test.getMessage() + " " + test.getSourceNode().getId() + " RTS " + test.getSourceNode().getRequestTimestamp());
 				} catch (ClassNotFoundException | IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -98,12 +100,10 @@ public class ClientListener extends Thread{
 	public synchronized void writeMessage(Message am) throws UnknownHostException, IOException{
 		
 			//ObjectOutputStream oos =
-		if(am.getDestinationNode()!=null)
-		{			
-			System.out.println(am.getDestinationNode().getId());
-		}
+		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
+		
 			//oos.writeObject(am);
 			//oos.close();
 	}

@@ -171,6 +171,7 @@ public class Main {
 		Message request = new Message();
 		request.setMessage("request");
 		request.setSourceNode(node);
+		System.out.println("Request time stamp : "+request.getSourceNode().getRequestTimestamp());
 		System.out.println("cs enter "+ node.getId());
 		for(Integer i : clientThread.keySet())
 		{
