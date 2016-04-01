@@ -9,17 +9,17 @@ import java.util.ArrayList;
 
 public class Client extends Thread{
 	Main main;
-	Node sourceNode;
+	//Node sourceNode;
 	Node destinationNode;
 	Socket s;
 	ObjectOutputStream oos;
 	ObjectInputStream ois;
 	
-	 public Client(Node sourceNode, Node destinationNode, Main main)
+	 public Client(Node destinationNode, Main main)
 	{
 		 
 		this.main = main;
-		this.sourceNode = sourceNode;
+		//this.sourceNode = sourceNode;
 		this.destinationNode = destinationNode;
 		
 		try {
@@ -36,17 +36,14 @@ public class Client extends Thread{
 		}	
 	}
 	 
-	 public void sendMessage(String message)
+	 public synchronized void sendMessage(Message send)
 	 {
-		 Message send = new Message();
-		// System.out.println("Client request time stamp" + main.node.getRequestTimestamp());
-		 send.setMessage(message);
-		 send.setSourceNode(main.node);
+		 //System.out.println("Client request time stamp" + main.node.getRequestTimestamp());
 		 send.setDestinationNode(destinationNode);
 		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
 		 try {
 			oos.writeObject(send);
-			oos.reset();;
+			oos.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -62,149 +59,24 @@ public class Client extends Thread{
 			e1.printStackTrace();
 		}
 		
-		 System.out.println("Client started "+ main.node.getId() + "for" + destinationNode.getId());
+		// System.out.println("Client started "+ main.node.getId() + "for" + destinationNode.getId());
 		 while(true)
 		 {
 			 
 			 try {
 				Message m = (Message)ois.readObject();
-				System.out.println("nilesh");
+				
 				if(m.getMessage().equalsIgnoreCase("grant"))
 				{
-					//1) update grant arrayList
-					System.out.println("Message "+ m.getMessage() + " Source "+ m.getSourceNode().getId() + " Destination "+m.getDestinationNode().getId());
-					if(main.node.getTimestamp() < m.getSourceNode().getTimestamp()){
-						main.node.setTimestamp(m.getSourceNode().getTimestamp()+1);
-						System.out.println("Time stamp if " + main.node.getTimestamp());
-					}else {
-						main.node.setTimestamp(main.node.getTimestamp()+1);
-						System.out.println("Time stamp else " + main.node.getTimestamp());
-						
-					}
-//					main.node.getGrant().add(m.getSourceNode());
-					main.node.grant.put(m.getSourceNode().getId(), m.getSourceNode());
-					System.out.print("Node "+ main.node.getId() + " Grant list ");
-					for(Integer n: main.node.grant.keySet())
-					{
-						System.out.print("(" + main.node.grant.get(n).getId() + "),");
-					}
-					System.out.println();
-					
-				
-					//main.node.setFailedList(removeElementFromList(node.getFailedList(), m.getSourceNode().getId()));
-					main.node.deleteFromFailedList(m.getSourceNode().getId());
-
-					//2) check size of grantArrayList 
-					if(main.node.grant.size() == main.node.getQuorum().size())
-					{
-						synchronized(this)
-						{
-							
-							Main.csEnter = true;
-							main.node.grant.clear();
-							//main.node.setRequestTimestamp(main.node.getTimestamp());
-							System.out.println("Main request timestamp" + main.node.getRequestTimestamp());
-						}
-						//go into critical section
-					}
-
-
+					main.grant(m);
 				}
 				else if(m.getMessage().equalsIgnoreCase("inquire"))
 				{
-					System.out.println("Message "+ m.getMessage() + " Source "+ m.getSourceNode().getId() + " Destination "+m.getDestinationNode().getId());
-					if(main.node.getTimestamp() < m.getSourceNode().getTimestamp()){
-						main.node.setTimestamp(m.getSourceNode().getTimestamp()+1);
-					}else {
-						main.node.setTimestamp(main.node.getTimestamp()+1);
-					}
-					if(main.node.getFailedList().size()>0)
-					{	
-						
-						main.node.deleteFromGrant(m.getSourceNode().getId());
-						main.node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
-						//node.getInquireQuorum().add(m.getSourceNode());
-						System.out.print("Inquire List ");
-						for(Integer n: main.node.inquireQuorum.keySet())
-						{
-							System.out.print("(" + main.node.inquireQuorum.get(n).getId() + ")");
-						}
-						System.out.println();
-						
-						main.node.setTimestamp(main.node.getTimestamp()+1);
-						
-						for(Integer n:main.node.inquireQuorum.keySet())
-						{
-							Main.clientThread.get(n).sendMessage("yield");
-							/*Message m1 = new Message();
-							m1.setDestinationNode(main.node.inquireQuorum.get(n));
-							m1.setSourceNode(main.node);
-							m1.setMessage("yield");
-							sendMessage(m1);*/
-						}
-						
-						main.node.inquireQuorum.clear();
-	
-					}
-					else
-					{
-						main.node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
-						System.out.println("else inquire");
-						System.out.print("Node "+ main.node.getId() +"Inquire List ");
-						for(Integer n:main.node.inquireQuorum.keySet())
-						{
-							System.out.print("(" + main.node.inquireQuorum.get(n).getId() + ")");
-						}
-						System.out.println();
-					}
-
+					main.inquire(m);
 				}
 				else if(m.getMessage().equalsIgnoreCase("failed"))
 				{
-					System.out.println("Message "+ m.getMessage() + " Source "+ m.getSourceNode().getId() + " Destination "+m.getDestinationNode().getId());
-					if(main.node.getTimestamp() < m.getSourceNode().getTimestamp()){
-						main.node.setTimestamp(m.getSourceNode().getTimestamp()+1);
-					}else {
-						main.node.setTimestamp(main.node.getTimestamp()+1);
-					}
-					//node.getFailedList().add(m.getSourceNode());
-					main.node.failedList.put(m.getSourceNode().getId(), m.getSourceNode());
-					System.out.println("Node "+main.node.getId() + " inside failed : inqQuorum size "+ main.node.getInquireQuorum().size());
-					if(main.node.getInquireQuorum().size()>0)
-					{
-						
-						//for(Node n: node.getInquireQuorum())
-						for(Integer n : main.node.inquireQuorum.keySet())
-						{
-							System.out.println("Node "+main.node.getId() + " inside failed inq quorum : "+ main.node.inquireQuorum.get(n).getId());
-							Main.clientThread.get(n).sendMessage("yield");
-							/*Message send = new Message();
-							main.node.setTimestamp(main.node.getTimestamp()+1);
-							send.setDestinationNode(destinationNode);
-							send.setSourceNode(sourceNode);
-							send.setMessage("yield");
-							sendMessage(send);*/
-							
-							main.node.deleteFromGrant(n);
-							//node.setGrant(removeElementFromList(node.getGrant(), n.getId()));
-
-													
-							//alm.add(send);
-							System.out.print("Node " + main.node.getId() + " Grant list after deletion ");
-							//for(Node a: node.getGrant())
-							for(Integer a: main.node.grant.keySet())
-							{
-								System.out.print(main.node.grant.get(a).getId() + ",");
-							}
-							System.out.println();
-							
-						}
-						System.out.println("Check alm Node "+ main.node.getId());
-						main.node.inquireQuorum.clear();
-						//node.setInquireQuorum(new ArrayList<Node>());
-//						SocketConnectionClient c = new SocketConnectionClient(alm);
-//						c.start();	
-					}
+					main.failed(m);
 				}
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
