@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -22,19 +24,23 @@ public class Main {
 	public static volatile boolean ackFromResourceForCSEnter = false;
 	public static volatile boolean ackFromResourceForCSExit = false;
 	public static HashMap<Integer, Client> clientThread;
-
+	static Socket resourceSocket;
+	static ObjectOutputStream resourceOOS;
+	static Main m;
 	public Main()
 	{
 		node = new Node();
 		resource = new Node();
 		this.clientThread = new HashMap<Integer, Client>();
+		
+		
 	}
 
 	public static void main(String[] args) {
 		int nodeNumber = Integer.parseInt(args[0]);
 		File f = new File(args[1]);
 
-		Main m = new Main();
+		m = new Main();
 		m.node.setId(nodeNumber);
 		m.readConfigFile(nodeNumber,f);
 		m.resource.setHostname(args[2]);
@@ -43,6 +49,17 @@ public class Main {
 		SocketConnectionServer server = new SocketConnectionServer(m);
 		server.start();
 
+		//create socket to the resources and use it later to send cs lock and cs unlock messages
+		try {
+			resourceSocket = new Socket(resourceHostName, resourcePortNumber);
+			resourceOOS = new ObjectOutputStream(resourceSocket.getOutputStream());
+		} catch (IOException e1) {
+
+			System.out.println("Exception while creating socket for Resource");
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+						
 		try {
 			Thread.sleep(3000);
 
@@ -189,6 +206,19 @@ public class Main {
 		//		
 		//		SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
 		//		sccResource.start();
+		//1) send cs lock message to the Resource process
+		Message msg = new Message();
+		msg.setMessage("csenter");
+		msg.setSourceNode(m.node);
+		try {
+			resourceOOS.writeObject(msg);
+			resourceOOS.flush();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			System.out.println("exception while writing to resource process socket");
+			e1.printStackTrace();
+		}
+		
 		System.out.println("Application main time stamp" + node.getRequestTimestamp());
 		node.vectorClock[node.getId()] = node.vectorClock[node.getId()]+1;
 		double lambda = 1.0 / csExecutionTime; 
@@ -223,11 +253,26 @@ public class Main {
 		//				SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
 		//				sccResource.start();
 
+		Message msg = new Message();
+		msg.setMessage("csexit");
+		msg.setSourceNode(m.node);
+		
+		try {
+			resourceOOS.writeObject(msg);
+			resourceOOS.flush();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			System.out.println("exception while writing 'csexit' to resource process socket");
+			e1.printStackTrace();
+		}
+		
 		for(Integer i : clientThread.keySet())
 		{
 			clientThread.get(i).sendMessage("release");
 		}
-
+		//1) unlock the resource (send unlock message to Resource Process)
+		
+		
 		//		while(!ackFromResourceForCSExit)
 		//		{
 		//			
