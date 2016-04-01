@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-
 public class ClientListener extends Thread{
 	
 	private ObjectInputStream ois;
@@ -30,24 +29,27 @@ public class ClientListener extends Thread{
 			{
 				if(msg.getMessage().equalsIgnoreCase("request"))
 				{
-					if(main.getNode().getTimestamp() < msg.getSourceNode().getTimestamp()){
-						main.getNode().setTimestamp(msg.getSourceNode().getTimestamp()+1);
+					System.out.println("Message "+ msg.getMessage() + " Source "+ msg.getSourceNode().getId() + " Destination "+msg.getDestinationNode().getId());
+					if(main.node.getTimestamp() < msg.getSourceNode().getTimestamp()){
+						main.node.setTimestamp(msg.getSourceNode().getTimestamp()+1);
 					}else {
-						main.getNode().setTimestamp(main.getNode().getTimestamp()+1);
+						main.node.setTimestamp(main.node.getTimestamp()+1);
 					}
-					if(!main.getNode().isGrantFlag())
+					if(!main.node.isGrantFlag())
 					{	//if this is first request, grant Flag is false
-						main.getNode().getQueue().add(msg.getSourceNode());
-						System.out.println("Node "+ main.getNode().getId() + " PQ first"+ main.getNode().getQueue().get(0).getId() + " TS "+ main.getNode().getQueue().get(0).getRequestTimestamp());
+						main.node.getQueue().add(msg.getSourceNode());
+						System.out.println("Node "+ main.node.getId() + " PQ first"+ main.node.getQueue().get(0).getId() + " RTS "+ main.node.getQueue().get(0).getRequestTimestamp() + " TS " +main.node.getQueue().get(0).getTimestamp());
+//						System.out.println("printing source");
+//						System.out.println("Node "+ main.node.getId() + " PQ first"+ msg.getSourceNode().getId() + " RTS "+ msg.getSourceNode().getRequestTimestamp() + " TS " +msg.getSourceNode().getTimestamp());
 						
 						//send grant to the source of msg
-						main.getNode().setTimestamp(main.getNode().getTimestamp()+1);
+						main.node.setTimestamp(main.node.getTimestamp()+1);
 						Message grantMsg = new Message();
-						grantMsg.setSourceNode(main.getNode());
+						grantMsg.setSourceNode(main.node);
 						grantMsg.setDestinationNode(msg.getSourceNode());
 						grantMsg.setMessage("grant");
-						main.getNode().setGrantFlag(true);
-						main.getNode().setGrantOwner(msg.getSourceNode());						
+						main.node.setGrantFlag(true);
+						main.node.setGrantOwner(msg.getSourceNode());						
 						try {
 							writeMessage(grantMsg);
 						} catch (IOException e) {
@@ -59,36 +61,36 @@ public class ClientListener extends Thread{
 					else 
 					{
 						//if(msg.getSourceNode().getTimestamp() > node.getGrantOwner().getTimestamp())
-						if(main.getNode().getQueue().size()>0)
+						if(main.node.getQueue().size()>0)
 						{
 							System.out.println("Else");
-							System.out.println("Node "+ main.getNode().getId() + " PQ first "+ main.getNode().getQueue().get(0).getId() + " TS "+ main.getNode().getQueue().get(0).getRequestTimestamp());
-							System.out.println("Node "+ main.getNode().getId() + " Src "+ msg.getSourceNode().getId() + " TS "+ msg.getSourceNode().getRequestTimestamp());
-							if((msg.getSourceNode().getRequestTimestamp() > main.getNode().getQueue().get(0).getRequestTimestamp()) || ((msg.getSourceNode().getRequestTimestamp()==main.getNode().getQueue().get(0).getRequestTimestamp()) && msg.getSourceNode().getId()>main.getNode().getQueue().get(0).getId()))
+							System.out.println("Node "+ main.node.getId() + " PQ first "+ main.node.getQueue().get(0).getId() + " TS "+ main.node.getQueue().get(0).getRequestTimestamp());
+							System.out.println("Node "+ main.node.getId() + " Src "+ msg.getSourceNode().getId() + " TS "+ msg.getSourceNode().getRequestTimestamp());
+							if((msg.getSourceNode().getRequestTimestamp() > main.node.getQueue().get(0).getRequestTimestamp()) || ((msg.getSourceNode().getRequestTimestamp()==main.node.getQueue().get(0).getRequestTimestamp()) && msg.getSourceNode().getId()>main.node.getQueue().get(0).getId()))
 							{	//msg's timestamp is more than grant owner's timestamp
 								//put this req msg into the original priority queue
 						
-								main.getNode().getQueue().add(msg.getSourceNode());
+								main.node.getQueue().add(msg.getSourceNode());
 								
 								System.out.println("Before build heap");
-								System.out.print("Node "+main.getNode().getId() + " PQ ");
-								for(Node n : main.getNode().getQueue())
+								System.out.print("Node "+main.node.getId() + " PQ ");
+								for(Node n : main.node.getQueue())
 								{
 									System.out.print("("+n.getRequestTimestamp()+","+n.getId()+"),");
 								}
 								System.out.println();
-								mn.buildMinHeap(main.getNode().getQueue());
+								mn.buildMinHeap(main.node.getQueue());
 								
 								System.out.println("After build heap");
-								System.out.print("Node "+main.getNode().getId() + " PQ ");
-								for(Node n : main.getNode().getQueue())
+								System.out.print("Node "+main.node.getId() + " PQ ");
+								for(Node n : main.node.getQueue())
 								{
 									System.out.print("("+n.getRequestTimestamp()+","+n.getId()+"),");
 								}
 								System.out.println();
 								//ArrayList<Message> alm = new ArrayList<Message>();
 								Message sendFailed = new Message();
-								sendFailed.setSourceNode(main.getNode());
+								sendFailed.setSourceNode(main.node);
 								sendFailed.setDestinationNode(msg.getSourceNode());
 								sendFailed.setMessage("failed");
 								try {
@@ -99,16 +101,16 @@ public class ClientListener extends Thread{
 								}	
 							}else
 							{
-								main.getNode().getWaitingForYield().put(msg.getSourceNode().getId(), msg.getSourceNode());	//add this req to waitingForYield list
-								if(!main.getNode().isInquireFlag()) 
-								{//check inquire Flag so that don't send inquire to a main.getNode() again and again
+								main.node.getWaitingForYield().put(msg.getSourceNode().getId(), msg.getSourceNode());	//add this req to waitingForYield list
+								if(!main.node.isInquireFlag()) 
+								{//check inquire Flag so that don't send inquire to a main.node again and again
 									//send inquire to grant owner
-									main.getNode().setTimestamp(main.getNode().getTimestamp()+1);
+									main.node.setTimestamp(main.node.getTimestamp()+1);
 									Message inquireMsg = new Message();
-									inquireMsg.setSourceNode(main.getNode());
-									inquireMsg.setDestinationNode(main.getNode().getGrantOwner());
+									inquireMsg.setSourceNode(main.node);
+									inquireMsg.setDestinationNode(main.node.getGrantOwner());
 									inquireMsg.setMessage("inquire");
-									main.getNode().setInquireFlag(true);
+									main.node.setInquireFlag(true);
 									try {
 										writeMessage(inquireMsg);
 									} catch (IOException e) {
@@ -125,49 +127,55 @@ public class ClientListener extends Thread{
 				else if(msg.getMessage().equalsIgnoreCase("release"))
 				{
 					System.out.println("Message "+ msg.getMessage() + " Source "+ msg.getSourceNode().getId() + " Destination "+msg.getDestinationNode().getId());
-					if(main.getNode().getTimestamp() < msg.getSourceNode().getTimestamp()){
-						main.getNode().setTimestamp(msg.getSourceNode().getTimestamp()+1);
+					if(main.node.getTimestamp() < msg.getSourceNode().getTimestamp()){
+						main.node.setTimestamp(msg.getSourceNode().getTimestamp()+1);
 					}else {
-						main.getNode().setTimestamp(main.getNode().getTimestamp()+1);
+						main.node.setTimestamp(main.node.getTimestamp()+1);
 					}
 					//1) delete first element from the main queue
-					main.getNode().getQueue().remove(0);
-					//mn.minHeapify(main.getNode().getQueue(), 0);
-					main.getNode().setGrantFlag(false);
+					main.node.getQueue().remove(0);
+					System.out.println("HAHAHAHAHAHA");
+					for(Node n : main.node.getQueue())
+					{
+						
+						System.out.println(n.getId() + " " + n.getRequestTimestamp() + " " + n.getTimestamp());
+					}
+					//mn.minHeapify(main.node.getQueue(), 0);
+					main.node.setGrantFlag(false);
 					
 					//2) Add waitingForYield list to original queue
-					for(Entry<Integer, Node> n : main.getNode().getWaitingForYield().entrySet())
+					for(Entry<Integer, Node> n : main.node.getWaitingForYield().entrySet())
 					{
-						main.getNode().getQueue().add(n.getValue());
+						main.node.getQueue().add(n.getValue());
 					}
 					
-					main.getNode().setWaitingForYield(new HashMap<Integer, Node>());
-					if(main.getNode().getQueue().size()>0)
+					main.node.setWaitingForYield(new HashMap<Integer, Node>());
+					if(main.node.getQueue().size()>0)
 					{
 						System.out.println("Before build heap");
-						System.out.print("Node "+main.getNode().getId() + " PQ ");
-						for(Node n : main.getNode().getQueue())
+						System.out.print("Node "+main.node.getId() + " PQ ");
+						for(Node n : main.node.getQueue())
 						{
 							System.out.print("("+n.getRequestTimestamp()+","+n.getId()+"),");
 						}
 						System.out.println();
 						
-						mn.buildMinHeap(main.getNode().getQueue());
+						mn.buildMinHeap(main.node.getQueue());
 						
 						System.out.println("After build heap");
-						System.out.print("Node "+main.getNode().getId() + " PQ ");
-						for(Node n : main.getNode().getQueue())
+						System.out.print("Node "+main.node.getId() + " PQ ");
+						for(Node n : main.node.getQueue())
 						{
 							System.out.print("("+n.getRequestTimestamp()+","+n.getId()+",");
 						}
 						System.out.println();
 						
-						main.getNode().setGrantOwner(main.getNode().getQueue().get(0));
+						main.node.setGrantOwner(main.node.getQueue().get(0));
 						Message sendGrant = new Message();
 						sendGrant.setMessage("grant");
-						sendGrant.setSourceNode(main.getNode());
-						sendGrant.setDestinationNode(main.getNode().getQueue().get(0));
-						main.getNode().setGrantFlag(true);
+						sendGrant.setSourceNode(main.node);
+						sendGrant.setDestinationNode(main.node.getQueue().get(0));
+						main.node.setGrantFlag(true);
 						try {
 							writeMessage(sendGrant);
 						} catch (IOException e) {
@@ -182,25 +190,25 @@ public class ClientListener extends Thread{
 				else if(msg.getMessage().equalsIgnoreCase("yield"))
 				{
 					System.out.println("Message "+ msg.getMessage() + " Source "+ msg.getSourceNode().getId() + " Destination "+msg.getDestinationNode().getId());
-					if(main.getNode().getTimestamp() < msg.getSourceNode().getTimestamp()){
-						main.getNode().setTimestamp(msg.getSourceNode().getTimestamp()+1);
+					if(main.node.getTimestamp() < msg.getSourceNode().getTimestamp()){
+						main.node.setTimestamp(msg.getSourceNode().getTimestamp()+1);
 					}else {
-						main.getNode().setTimestamp(main.getNode().getTimestamp()+1);
+						main.node.setTimestamp(main.node.getTimestamp()+1);
 					}
-					if(main.getNode().getWaitingForYield().size()>0)
+					if(main.node.getWaitingForYield().size()>0)
 					{
-						for(Entry<Integer, Node> n : main.getNode().getWaitingForYield().entrySet())
+						for(Entry<Integer, Node> n : main.node.getWaitingForYield().entrySet())
 						{
-							main.getNode().getQueue().add(n.getValue());
+							main.node.getQueue().add(n.getValue());
 						}
-						mn.buildMinHeap(main.getNode().getQueue());
-						main.getNode().setTimestamp(main.getNode().getTimestamp()+1);
+						mn.buildMinHeap(main.node.getQueue());
+						main.node.setTimestamp(main.node.getTimestamp()+1);
 						Message send = new Message();
-						send.setSourceNode(main.getNode());
-						send.setDestinationNode(main.getNode().getQueue().get(0));
+						send.setSourceNode(main.node);
+						send.setDestinationNode(main.node.getQueue().get(0));
 						send.setMessage("grant");
-						System.out.println("Node "+main.getNode().getId()+" inside yield first of pq "+main.getNode().getQueue().get(0).getId());
-						main.getNode().setWaitingForYield(new HashMap<Integer, Node>());
+						System.out.println("Node "+main.node.getId()+" inside yield first of pq "+main.node.getQueue().get(0).getId());
+						main.node.setWaitingForYield(new HashMap<Integer, Node>());
 						try {
 							writeMessage(send);
 						} catch (IOException e) {
@@ -211,33 +219,28 @@ public class ClientListener extends Thread{
 					}
 
 				}
+				try {
+					this.msg = (Message)this.ois.readObject();
+				} catch (ClassNotFoundException | IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				
-				else if(msg.getMessage().equalsIgnoreCase("csenter"))
-				{
-					Main.ackFromResourceForCSEnter = true;
-				}
-				else if(msg.getMessage().equalsIgnoreCase("csexit"))
-				{
-					Main.ackFromResourceForCSExit = true;
-				}
 			}
 			
 			//2) listen to input stream
 			//once a messgea is arrived it goes to the start if the loop and process the message again
-			try {
-				this.msg = (Message)this.ois.readObject();
-			} catch (ClassNotFoundException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 	
 	//used to send message to the client/(s)
 	
 	void writeMessage(Message am) throws UnknownHostException, IOException{
-			ObjectOutputStream oos = SocketConnectionServer.clientOS.get(am.getDestinationNode().getId());
-			oos.writeObject(am);
+		
+			//ObjectOutputStream oos = 
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
+			//oos.writeObject(am);
 			//oos.close();
 	}
 }

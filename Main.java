@@ -22,7 +22,7 @@ public class Main {
 	public static volatile boolean ackFromResourceForCSEnter = false;
 	public static volatile boolean ackFromResourceForCSExit = false;
 	public static HashMap<Integer, Client> clientThread;
-	
+
 	public Main()
 	{
 		node = new Node();
@@ -40,39 +40,39 @@ public class Main {
 		m.resource.setHostname(args[2]);
 		m.resource.setPortNumber(Integer.parseInt(args[3]));
 
-		/*SocketConnectionServer server = new SocketConnectionServer(m);
-		server.start();*/
+		SocketConnectionServer server = new SocketConnectionServer(m);
+		server.start();
 
 		try {
 			Thread.sleep(3000);
+
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
+
 		for(Node n : m.node.getQuorum())
 		{
+
 			Client c = new Client(m.node,n,m);
+
 			c.start();
 			clientThread.put(n.getId(), c);
 		}
 
+
 		while(m.numberOfRequest>0)
-		//int counter = 2;
-		//while(counter>0)
-		{			
+			//int counter = 2;
+			//while(counter>0)
+		{
+			if(m.node.getId()!=3)
+			{
 
-			try {        	
-
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+				m.csEnter();
+				m.csExecution();
+				m.csExit();
 			}
-
-			m.csEnter();
-			m.csExecution();
-			m.csExit();
-
 			m.numberOfRequest = m.numberOfRequest - 1;
 			//counter--;
 			double lambda = 1.0 / m.interRequestDelay; 
@@ -84,7 +84,7 @@ public class Main {
 				e.printStackTrace();
 			}	
 		}
-		
+
 	}
 
 	public void readConfigFile(int nodeNumber, File f)
@@ -163,7 +163,7 @@ public class Main {
 
 	public void csEnter()
 	{
-
+		System.out.println("cs enter "+ node.getId());
 		for(Integer i : clientThread.keySet())
 		{
 			clientThread.get(i).sendMessage("request");
@@ -179,61 +179,62 @@ public class Main {
 	public void csExecution()
 	{
 		//sending execution request to the resource csgrads1
-//		ArrayList<Message> almResource = new ArrayList<Message>();
-//		Message mResource = new Message();
-//		mResource.setSourceNode(node);
-//		//we will get the destination hostname fro command line argument
-//		mResource.setDestinationNode(resource);
-//		mResource.setMessage("csenter");
-//		almResource.add(mResource);
-//		
-//		SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
-//		sccResource.start();
+		//		ArrayList<Message> almResource = new ArrayList<Message>();
+		//		Message mResource = new Message();
+		//		mResource.setSourceNode(node);
+		//		//we will get the destination hostname fro command line argument
+		//		mResource.setDestinationNode(resource);
+		//		mResource.setMessage("csenter");
+		//		almResource.add(mResource);
+		//		
+		//		SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
+		//		sccResource.start();
+		System.out.println("Application main time stamp" + node.getRequestTimestamp());
 		node.vectorClock[node.getId()] = node.vectorClock[node.getId()]+1;
-        double lambda = 1.0 / csExecutionTime; 
-        Random defaultR = new Random();
-        try {        	
-        	long l = (long) getRandom(defaultR, lambda);
+		double lambda = 1.0 / csExecutionTime; 
+		Random defaultR = new Random();
+		try {        	
+			long l = (long) getRandom(defaultR, lambda);
 			Thread.sleep(l);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		System.out.println("CSExecution "+ node.getId());
 		Main.csEnter = false;
-//		while(!ackFromResourceForCSEnter)
-//		{
-//			
-//		}
-//		ackFromResourceForCSEnter = false;
+		//		while(!ackFromResourceForCSEnter)
+		//		{
+		//			
+		//		}
+		//		ackFromResourceForCSEnter = false;
 
 	}
 
 	public void csExit()
 	{
 		//sending execution request to the resource csgrads1
-//				ArrayList<Message> almResource = new ArrayList<Message>();
-//				Message mResource = new Message();
-//				mResource.setSourceNode(node);
-//				//we will get the destination hostname fro command line argument
-//				mResource.setDestinationNode(resource);
-//				mResource.setMessage("csexit");
-//				almResource.add(mResource);
-//				
-//				SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
-//				sccResource.start();
-		
+		//				ArrayList<Message> almResource = new ArrayList<Message>();
+		//				Message mResource = new Message();
+		//				mResource.setSourceNode(node);
+		//				//we will get the destination hostname fro command line argument
+		//				mResource.setDestinationNode(resource);
+		//				mResource.setMessage("csexit");
+		//				almResource.add(mResource);
+		//				
+		//				SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
+		//				sccResource.start();
+
 		for(Integer i : clientThread.keySet())
 		{
 			clientThread.get(i).sendMessage("release");
 		}
-		
-//		while(!ackFromResourceForCSExit)
-//		{
-//			
-//		}
-//		ackFromResourceForCSExit = false;
-		
-		
+
+		//		while(!ackFromResourceForCSExit)
+		//		{
+		//			
+		//		}
+		//		ackFromResourceForCSExit = false;
+
+
 	}
 
 	public double getRandom(Random r, double p) { 

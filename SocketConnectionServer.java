@@ -11,12 +11,13 @@ import java.util.HashMap;
 public class SocketConnectionServer extends Thread{
 
 	Main m ;
-	public static HashMap<Integer,ObjectOutputStream> clientOS;
+	public volatile static HashMap<Integer,ObjectOutputStream> clientOS;
 
 	private static ServerSocket serverSock;
 	public SocketConnectionServer(Main m)
 	{
 		this.m = m;
+		this.clientOS = new HashMap<Integer, ObjectOutputStream>();
 	}
 
 	public void run()
@@ -38,11 +39,11 @@ public class SocketConnectionServer extends Thread{
 				ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
 				Message msg = (Message) (ois.readObject());
 				
-				clientOS.put(m.getNode().getId(), oos);
+				clientOS.put(msg.getSourceNode().getId(), oos);
 				
 				ClientListener clientListener = new ClientListener(ois, msg, m);
 				clientListener.start();
-				ois.close();
+				//ois.close();
 				
 			}
 

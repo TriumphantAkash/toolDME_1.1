@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -16,13 +17,16 @@ public class Client extends Thread{
 	
 	 public Client(Node sourceNode, Node destinationNode, Main main)
 	{
+		 
 		this.main = main;
 		this.sourceNode = sourceNode;
 		this.destinationNode = destinationNode;
+		
 		try {
 			s = new Socket(destinationNode.getHostname(), destinationNode.getPortNumber());
 			oos = new ObjectOutputStream(s.getOutputStream());
-			ois = new ObjectInputStream(s.getInputStream());
+			
+			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -35,12 +39,14 @@ public class Client extends Thread{
 	 public void sendMessage(String message)
 	 {
 		 Message send = new Message();
+		// System.out.println("Client request time stamp" + main.node.getRequestTimestamp());
 		 send.setMessage(message);
-		 send.setSourceNode(sourceNode);
+		 send.setSourceNode(main.node);
 		 send.setDestinationNode(destinationNode);
+		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
 		 try {
 			oos.writeObject(send);
-			oos.flush();
+			oos.reset();;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -49,26 +55,38 @@ public class Client extends Thread{
 	
 	 public void run()
 	 {
+		 try {
+			ois = new ObjectInputStream(s.getInputStream());
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		 System.out.println("Client started "+ main.node.getId() + "for" + destinationNode.getId());
 		 while(true)
 		 {
+			 
 			 try {
 				Message m = (Message)ois.readObject();
-				
+				System.out.println("nilesh");
 				if(m.getMessage().equalsIgnoreCase("grant"))
 				{
 					//1) update grant arrayList
 					System.out.println("Message "+ m.getMessage() + " Source "+ m.getSourceNode().getId() + " Destination "+m.getDestinationNode().getId());
 					if(main.node.getTimestamp() < m.getSourceNode().getTimestamp()){
 						main.node.setTimestamp(m.getSourceNode().getTimestamp()+1);
+						System.out.println("Time stamp if " + main.node.getTimestamp());
 					}else {
 						main.node.setTimestamp(main.node.getTimestamp()+1);
+						System.out.println("Time stamp else " + main.node.getTimestamp());
+						
 					}
 //					main.node.getGrant().add(m.getSourceNode());
 					main.node.grant.put(m.getSourceNode().getId(), m.getSourceNode());
 					System.out.print("Node "+ main.node.getId() + " Grant list ");
 					for(Integer n: main.node.grant.keySet())
 					{
-						System.out.print("(" + main.node.grant.get(n) + "),");
+						System.out.print("(" + main.node.grant.get(n).getId() + "),");
 					}
 					System.out.println();
 					
@@ -84,7 +102,8 @@ public class Client extends Thread{
 							
 							Main.csEnter = true;
 							main.node.grant.clear();
-							main.node.setRequestTimestamp(main.node.getTimestamp());
+							//main.node.setRequestTimestamp(main.node.getTimestamp());
+							System.out.println("Main request timestamp" + main.node.getRequestTimestamp());
 						}
 						//go into critical section
 					}
@@ -108,7 +127,7 @@ public class Client extends Thread{
 						System.out.print("Inquire List ");
 						for(Integer n: main.node.inquireQuorum.keySet())
 						{
-							System.out.print("(" + main.node.inquireQuorum.get(n) + ")");
+							System.out.print("(" + main.node.inquireQuorum.get(n).getId() + ")");
 						}
 						System.out.println();
 						
@@ -134,7 +153,7 @@ public class Client extends Thread{
 						System.out.print("Node "+ main.node.getId() +"Inquire List ");
 						for(Integer n:main.node.inquireQuorum.keySet())
 						{
-							System.out.print("(" + main.node.inquireQuorum.get(n) + ")");
+							System.out.print("(" + main.node.inquireQuorum.get(n).getId() + ")");
 						}
 						System.out.println();
 					}
@@ -157,7 +176,7 @@ public class Client extends Thread{
 						//for(Node n: node.getInquireQuorum())
 						for(Integer n : main.node.inquireQuorum.keySet())
 						{
-							System.out.println("Node "+main.node.getId() + " inside failed inq quorum : "+ main.node.inquireQuorum.get(n));
+							System.out.println("Node "+main.node.getId() + " inside failed inq quorum : "+ main.node.inquireQuorum.get(n).getId());
 							Main.clientThread.get(n).sendMessage("yield");
 							/*Message send = new Message();
 							main.node.setTimestamp(main.node.getTimestamp()+1);
