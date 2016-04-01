@@ -43,7 +43,8 @@ public class Client extends Thread{
 		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
 		 try {
 			//oos.reset();
-			oos.writeObject(send);
+			//oos.writeObject(send);
+			oos.writeUnshared(send);
 			oos.flush();
 			
 		} catch (IOException e) {
@@ -66,7 +67,8 @@ public class Client extends Thread{
 		 {
 			 
 			 try {
-				Message m = (Message)ois.readObject();
+				//Message m = (Message)ois.readObject();
+				 Message m = (Message)ois.readUnshared();
 				
 				if(m.getMessage().equalsIgnoreCase("grant"))
 				{

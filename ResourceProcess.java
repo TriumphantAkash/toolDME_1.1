@@ -31,13 +31,13 @@ public class ResourceProcess {
 
 
 		//there will be 2 messages for each csenter request, so initializing with 2*total resource messages
-		totalRequest = (2*rp.totalNode*rp.numberOfRequest);
+		totalRequest = (rp.totalNode*rp.numberOfRequest);
 		
 		ServerSocket serverSock;
 		try {
 			serverSock = new ServerSocket(Integer.parseInt(args[0]));
 			
-			int totalRequest = (rp.totalNode*rp.numberOfRequest);
+			//int totalRequest = (rp.totalNode*rp.numberOfRequest);
 			//int totalRequest = 12;
 
 			System.out.println("Resource Server started at port: "+args[0]);
@@ -115,6 +115,7 @@ public class ResourceProcess {
 			}else {
 
 				resourceUseFlag = true;
+				
 			}
 		}
 
@@ -129,7 +130,7 @@ public class ResourceProcess {
 
 					resourceUseFlag = false;
 				}	
-				System.out.println("Counter" + counter);
+				//System.out.println("Counter" + counter);
 				if(counter==(totalRequest) && dmeHolds)
 				{
 					System.out.println("[DME RESULT] \"DME Hold\" [DME RESULT]");

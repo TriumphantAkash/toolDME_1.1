@@ -37,8 +37,8 @@ public class SocketConnectionServer extends Thread{
 
 				ObjectInputStream ois = new ObjectInputStream(sock.getInputStream());
 				ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-				Message msg = (Message) (ois.readObject());
-				
+				//Message msg = (Message) (ois.readObject());
+				Message msg = (Message) (ois.readUnshared());
 				clientOS.put(msg.getSourceNode().getId(), oos);
 				
 				ClientListener clientListener = new ClientListener(ois, msg, m);

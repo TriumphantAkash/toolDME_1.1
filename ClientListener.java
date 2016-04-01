@@ -22,7 +22,6 @@ public class ClientListener extends Thread{
 	public void run(){
 		
 
-		MinHeap mn = new MinHeap();
 		while(true){
 			//1) process the message
 			synchronized(this)
@@ -80,7 +79,8 @@ public class ClientListener extends Thread{
 
 				}
 				try {
-					this.msg = (Message)this.ois.readObject();
+					//this.msg = (Message)this.ois.readObject();
+					this.msg = (Message)this.ois.readUnshared();
 //					Message test = (Message)this.ois.readObject();
 //					System.out.println("Nilesh " + test.getMessage() + " " + test.getSourceNode().getId() + " RTS " + test.getSourceNode().getRequestTimestamp());
 				} catch (ClassNotFoundException | IOException e) {
@@ -101,7 +101,8 @@ public class ClientListener extends Thread{
 		
 			//ObjectOutputStream oos =
 		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
-		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
+		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeUnshared(am);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
 		
 			//oos.writeObject(am);
