@@ -2,8 +2,8 @@
 #Author: Nilesh Gupta
 #This script needs 2 argument. path to config file, and netid
 
-resourceHostName=csgrads1
-resoucePortNumber=65535
+resourceHostName=dc01
+resoucePortNumber=40000
 PROG=Project2
 javac *.java
 #command line arguments

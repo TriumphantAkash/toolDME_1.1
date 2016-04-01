@@ -1,7 +1,7 @@
 #!/bin/bash
 #Author: Moses Ike. http://mosesike.org
 #This script needs 2 argument. path to config file, and netid
-resourceHostName=csgrads1
+resourceHostName=dc01
 
 CONFIG=$1
 netid=$2
