@@ -10,7 +10,7 @@ public class Node implements Serializable{
 	private int portNumber;
 	private String hostname;
 	private ArrayList<Node> quorum;
-	private ArrayList<Node> queue;
+	//private ArrayList<Node> queue;
 	private Node grantOwner;
 	private boolean grantFlag;
 	private boolean inquireFlag;
@@ -27,7 +27,7 @@ public class Node implements Serializable{
 		waitingForYield = new HashMap<Integer,Node>();
 		inquireQuorum = new HashMap<Integer,Node>();
 		failedList = new HashMap<Integer,Node>();
-		queue = new ArrayList<Node>();
+		//queue = new ArrayList<Node>();
 		quorum = new ArrayList<Node>();
 		
 	}
@@ -57,12 +57,12 @@ public class Node implements Serializable{
 	public void setQuorum(ArrayList<Node> quorum) {
 		this.quorum = quorum;
 	}
-	public ArrayList<Node> getQueue() {
+	/*public ArrayList<Node> getQueue() {
 		return queue;
 	}
 	public void setQueue(ArrayList<Node> queue) {
 		this.queue = queue;
-	}
+	}*/
 	public Node getGrantOwner() {
 		return grantOwner;
 	}
