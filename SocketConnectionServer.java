@@ -1,4 +1,4 @@
-package quorum;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,9 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
-import mainPackage.Main;
-import models.Message;
-import models.Node;
+
 
 public class SocketConnectionServer extends Thread{
 
