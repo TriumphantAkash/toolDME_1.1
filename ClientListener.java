@@ -224,6 +224,12 @@ public class ClientListener extends Thread{
 			
 			//2) listen to input stream
 			//once a messgea is arrived it goes to the start if the loop and process the message again
+			try {
+				this.msg = (Message)this.ois.readObject();
+			} catch (ClassNotFoundException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
