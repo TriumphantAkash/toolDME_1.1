@@ -5,15 +5,16 @@ resourceHostName=csgrads1
 
 CONFIG=$1
 netid=$2
-
+ssh -o StrictHostKeyChecking=no $netid@$resourceHostName "ps -u $USER | grep java | tr -s ' ' | cut -f1 -d' ' | xargs kill "
+ssh -o StrictHostKeyChecking=no $netid@$resourceHostName "ps -fu $USER | grep java | tr -s ' ' | cut -f2 -d' ' | xargs kill "
 n=1
 cat $CONFIG | sed -e "s/#.*//" | sed -e "/^\s*$/d" |
 (
     read i
     #echo $i
     nodes=$( echo $i | cut -f1 -d" ")
-    ssh -o StrictHostKeyChecking=no $netid@$resourceHostName "ps -u $USER | grep java | tr -s ' ' | cut -f1 -d' ' | xargs kill " &
-    while read line 
+
+ while read line 
     do
         host=$( echo $line | awk '{ print $2 }' )
 
@@ -28,8 +29,6 @@ cat $CONFIG | sed -e "s/#.*//" | sed -e "/^\s*$/d" |
         	break
         fi
     done
-   
 )
-
 
 echo "Cleanup complete"

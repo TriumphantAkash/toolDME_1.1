@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 public class Node implements Serializable{
 
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private int portNumber;
 	private String hostname;

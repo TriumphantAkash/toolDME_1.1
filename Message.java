@@ -2,10 +2,12 @@ import java.io.Serializable;
 
 
 public class Message implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
 	private String message;
 	private Node sourceNode;
 	private Node destinationNode;
-	public int[] vectorClock;
+	
 	
 	public String getMessage() {
 		return message;
@@ -24,12 +26,6 @@ public class Message implements Serializable{
 	}
 	public void setDestinationNode(Node destinationNode) {
 		this.destinationNode = destinationNode;
-	}
-	public int[] getVectorClock() {
-		return vectorClock;
-	}
-	public void setVectorClock(int[] vectorClock) {
-		this.vectorClock = vectorClock;
 	}
 	
 }

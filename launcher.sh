@@ -12,7 +12,7 @@ CONFIG=$1
 netid=$2
 
 ssh -o StrictHostKeyChecking=no $netid@$resourceHostName "cd $(pwd); java ResourceProcess $resoucePortNumber temp" &
-
+#"cd $(pwd); java ResourceProcess $resoucePortNumber temp" &
 #clear a custom debug file b4 each run/test
 echo -e "" > debug.txt
 
@@ -73,7 +73,7 @@ do
 #	neighbors=${neighbors_dict["$node_id"]}
 	#if [ $node_id -ne $root_node ]; then
 #		echo $netid@$host "java Main $node_id 'temp' "
-		ssh -o StrictHostKeyChecking=no $netid@$host "cd $(pwd); java Main $node_id temp $resourceHostName $resoucePortNumber" &
+		ssh -o StrictHostKeyChecking=no $netid@$host "cd $(pwd); java -Xmx512m Main $node_id temp $resourceHostName $resoucePortNumber" &
 		
 #	else
 #		root_hostName+=$host

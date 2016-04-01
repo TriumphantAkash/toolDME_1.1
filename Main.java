@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class Main {
 
-	Node node;
+	static Node node;
 	int totalNode;
 	int interRequestDelay;
 	int csExecutionTime;
@@ -27,6 +27,7 @@ public class Main {
 	{
 		node = new Node();
 		resource = new Node();
+		this.clientThread = new HashMap<Integer, Client>();
 	}
 
 	public static void main(String[] args) {
@@ -47,6 +48,13 @@ public class Main {
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		
+		for(Node n : m.node.getQuorum())
+		{
+			Client c = new Client(m.node,n,m);
+			c.start();
+			clientThread.put(n.getId(), c);
 		}
 
 		while(m.numberOfRequest>0)
@@ -155,17 +163,12 @@ public class Main {
 
 	public void csEnter()
 	{
-		ArrayList<Message> alm = new ArrayList<Message>();
-		for(Node n : node.getQuorum())
+
+		for(Integer i : clientThread.keySet())
 		{
-			Message m = new Message();
-			m.setSourceNode(node);
-			m.setDestinationNode(n);
-			m.setMessage("request");
-			alm.add(m);
+			clientThread.get(i).sendMessage("request");
 		}
-		SocketConnectionClient scc = new SocketConnectionClient(alm);
-		scc.start();
+
 		while(!Main.csEnter)
 		{
 		}
@@ -218,19 +221,12 @@ public class Main {
 //				
 //				SocketConnectionClient sccResource = new SocketConnectionClient(almResource);
 //				sccResource.start();
-				
-		ArrayList<Message> alm = new ArrayList<Message>();
-		for(Node n : node.getQuorum())
+		
+		for(Integer i : clientThread.keySet())
 		{
-			Message m = new Message();
-			m.setSourceNode(node);
-			m.setDestinationNode(n);
-			m.setVectorClock(node.vectorClock);
-			m.setMessage("release");
-			alm.add(m);
+			clientThread.get(i).sendMessage("release");
 		}
-		SocketConnectionClient scc = new SocketConnectionClient(alm);
-		scc.start();
+		
 //		while(!ackFromResourceForCSExit)
 //		{
 //			
