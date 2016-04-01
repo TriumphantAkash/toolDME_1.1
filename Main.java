@@ -278,6 +278,9 @@ public class Main {
 			e1.printStackTrace();
 		}
 
+		Message release = new Message();
+		release.setMessage("release");
+		release.setSourceNode(node);
 		
 		for(Integer i : clientThread.keySet())
 		{
