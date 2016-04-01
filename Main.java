@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class Main {
 
-	static Node node;
+	Node node;
 	int totalNode;
 	int interRequestDelay;
 	int csExecutionTime;
@@ -40,8 +40,8 @@ public class Main {
 		m.resource.setHostname(args[2]);
 		m.resource.setPortNumber(Integer.parseInt(args[3]));
 
-		SocketConnectionServer server = new SocketConnectionServer(m);
-		server.start();
+		/*SocketConnectionServer server = new SocketConnectionServer(m);
+		server.start();*/
 
 		try {
 			Thread.sleep(3000);

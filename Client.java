@@ -153,7 +153,7 @@ public class Client extends Thread{
 					System.out.println("Node "+main.node.getId() + " inside failed : inqQuorum size "+ main.node.getInquireQuorum().size());
 					if(main.node.getInquireQuorum().size()>0)
 					{
-						ArrayList<Message> alm = new ArrayList<Message>();
+						
 						//for(Node n: node.getInquireQuorum())
 						for(Integer n : main.node.inquireQuorum.keySet())
 						{
