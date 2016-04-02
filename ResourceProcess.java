@@ -115,6 +115,7 @@ public class ResourceProcess {
 			}else {
 
 				resourceUseFlag = true;
+				
 			}
 		}
 

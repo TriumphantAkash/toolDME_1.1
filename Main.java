@@ -62,7 +62,6 @@ public class Main {
 
 		//create socket to the resources and use it later to send cs lock and cs unlock messages
 
-
 		try {
 			Thread.sleep(3000);
 
@@ -70,7 +69,7 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
 
 		for(Node n : m.node.getQuorum())
 		{
@@ -83,13 +82,13 @@ public class Main {
 		try {
 			resourceSocket = new Socket(m.resource.getHostname(), m.resource.getPortNumber());
 			resourceOOS = new ObjectOutputStream(resourceSocket.getOutputStream());
-			
+
 		} catch (IOException e1) {
 
-			
 			System.out.println("Exception while creating socket for Resource");
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+		
 		}
 		
 
@@ -231,7 +230,9 @@ public class Main {
 		msg.setMessage("csenter");
 		msg.setSourceNode(m.node);
 		try {
-			resourceOOS.writeObject(msg);
+			//resourceOOS.writeObject(msg);
+			//resourceOOS.flush();
+			resourceOOS.writeUnshared(msg);
 			resourceOOS.flush();
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block

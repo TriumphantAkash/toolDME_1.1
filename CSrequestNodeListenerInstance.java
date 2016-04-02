@@ -23,9 +23,14 @@ public class CSrequestNodeListenerInstance extends Thread{
 		
 		
 		while(true){
+<<<<<<< HEAD
 			
+=======
+			//ResourceProcess.totalRequest--;
+>>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
 			try {
-				msg = (Message)ois.readObject();
+				//msg = (Message)ois.readObject();
+				msg = (Message)ois.readUnshared();
 			} catch (ClassNotFoundException | IOException e) {
 				// TODO Auto-generated catch block
 				System.out.println("exception while reading resource message at Resource");

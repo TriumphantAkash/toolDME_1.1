@@ -61,11 +61,17 @@ public class Client extends Thread{
 		 try {
 			//oos.reset();
 			//oos.writeObject(send);
+<<<<<<< HEAD
 			//oos.flush();
 			 System.out.println("Message" + message);
 			 out.writeBytes(message);
 			 out.writeBytes("\n");
 			 out.flush();
+=======
+			oos.writeUnshared(send);
+			oos.flush();
+			
+>>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -88,6 +94,7 @@ public class Client extends Thread{
 			 
 			 try {
 				//Message m = (Message)ois.readObject();
+<<<<<<< HEAD
 				 String message = br.readLine();
 				 
 				 String[] split = message.split("\\s+");
@@ -100,6 +107,9 @@ public class Client extends Thread{
 				 m.setMessage(split[0]);
 				 m.setSourceNode(source);
 				 m.setDestinationNode(destination);
+=======
+				 Message m = (Message)ois.readUnshared();
+>>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
 				
 				if(m.getMessage().equalsIgnoreCase("grant"))
 				{
