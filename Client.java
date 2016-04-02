@@ -1,5 +1,8 @@
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -13,7 +16,9 @@ public class Client extends Thread{
 	Node destinationNode;
 	Socket s;
 	ObjectOutputStream oos;
-	ObjectInputStream ois;
+	//ObjectInputStream ois;
+	DataOutputStream out;
+	BufferedReader br;
 	
 	 public Client(Node destinationNode, Main main)
 	{
@@ -24,7 +29,8 @@ public class Client extends Thread{
 		
 		try {
 			s = new Socket(destinationNode.getHostname(), destinationNode.getPortNumber());
-			oos = new ObjectOutputStream(s.getOutputStream());
+			//oos = new ObjectOutputStream(s.getOutputStream());
+			out = new DataOutputStream(s.getOutputStream());
 			
 			
 		} catch (UnknownHostException e) {
@@ -39,13 +45,27 @@ public class Client extends Thread{
 	 public synchronized void sendMessage(Message send)
 	 {
 		 //System.out.println("Client request time stamp" + main.node.getRequestTimestamp());
-		 send.setDestinationNode(destinationNode);
+		//send.setDestinationNode(destinationNode);
+		
+		String message = new String();
+		if(send.getMessage().equalsIgnoreCase("request"))
+		{
+			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ destinationNode.getId() + " "+send.getSourceNode().getTimestamp() +" " + send.getSourceNode().getRequestTimestamp();
+		}
+		else
+		{
+			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ destinationNode.getId() + " "+main.node.getTimestamp() +" " + "1";
+		
+		}
 		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
 		 try {
 			//oos.reset();
-			oos.writeObject(send);
-			oos.flush();
-			
+			//oos.writeObject(send);
+			//oos.flush();
+			 System.out.println("Message" + message);
+			 out.writeBytes(message);
+			 out.writeBytes("\n");
+			 out.flush();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -55,7 +75,8 @@ public class Client extends Thread{
 	 public void run()
 	 {
 		 try {
-			ois = new ObjectInputStream(s.getInputStream());
+			//ois = new ObjectInputStream(s.getInputStream());
+			 br = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -66,7 +87,19 @@ public class Client extends Thread{
 		 {
 			 
 			 try {
-				Message m = (Message)ois.readObject();
+				//Message m = (Message)ois.readObject();
+				 String message = br.readLine();
+				 
+				 String[] split = message.split("\\s+");
+				 Message m = new Message();
+				 Node source = Main.hostNameHM.get(Integer.parseInt(split[1]));
+				 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
+				 source.setTimestamp(Integer.parseInt(split[3]));
+				 source.setRequestTimestamp(Integer.parseInt(split[4]));
+				 
+				 m.setMessage(split[0]);
+				 m.setSourceNode(source);
+				 m.setDestinationNode(destination);
 				
 				if(m.getMessage().equalsIgnoreCase("grant"))
 				{
@@ -80,9 +113,6 @@ public class Client extends Thread{
 				{
 					main.failed(m);
 				}
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

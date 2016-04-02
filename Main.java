@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -28,7 +29,10 @@ public class Main {
 
 	static Socket resourceSocket;
 	static ObjectOutputStream resourceOOS;
+	static ObjectInputStream resourceOIS;
 	static Main m;
+	static boolean resourceFlag = true;
+	public static HashMap<Integer,Node> hostNameHM;
 
 	ArrayList<Node> queue;
 	MinHeap mn;
@@ -57,16 +61,8 @@ public class Main {
 		server.start();
 
 		//create socket to the resources and use it later to send cs lock and cs unlock messages
-		try {
-			resourceSocket = new Socket(resourceHostName, resourcePortNumber);
-			resourceOOS = new ObjectOutputStream(resourceSocket.getOutputStream());
-		} catch (IOException e1) {
 
-			System.out.println("Exception while creating socket for Resource");
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-						
+
 		try {
 			Thread.sleep(3000);
 
@@ -84,19 +80,29 @@ public class Main {
 			c.start();
 			clientThread.put(n.getId(), c);
 		}
+		try {
+			resourceSocket = new Socket(m.resource.getHostname(), m.resource.getPortNumber());
+			resourceOOS = new ObjectOutputStream(resourceSocket.getOutputStream());
+			
+		} catch (IOException e1) {
 
+			
+			System.out.println("Exception while creating socket for Resource");
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 
 		while(m.numberOfRequest>0)
 			//int counter = 2;
 			//while(counter>0)
 		{
-			if(m.node.getId()!=3)
-			{
-
-				m.csEnter();
-				m.csExecution();
-				m.csExit();
-			}
+			
+			
+			m.csEnter();
+			m.csExecution();
+			m.csExit();
+			
 			m.numberOfRequest = m.numberOfRequest - 1;
 			//counter--;
 			double lambda = 1.0 / m.interRequestDelay; 
@@ -118,7 +124,7 @@ public class Main {
 			fileReader = new FileReader(f);
 			BufferedReader br = new BufferedReader(fileReader);
 			ArrayList<Node> aln = new ArrayList<Node>();
-			HashMap<Integer,Node> hostNameHM = new HashMap<Integer, Node>();
+			hostNameHM = new HashMap<Integer, Node>();
 
 			String line1 = br.readLine();
 			String[] words = line1.split("\\s+");
@@ -165,7 +171,7 @@ public class Main {
 			node.setHostname(hostNameHM.get(nodeNumber).getHostname());
 			node.setPortNumber(hostNameHM.get(nodeNumber).getPortNumber());
 			node.setQuorum(hm.get(nodeNumber));
-			node.setVectorClock(new int[totalNode]);
+			
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -192,10 +198,11 @@ public class Main {
 		request.setSourceNode(node);
 		System.out.println("Request time stamp : "+request.getSourceNode().getRequestTimestamp());
 		System.out.println("cs enter "+ node.getId());
+		System.out.println("CLIENT THREAD : " + node.getId() + " " + clientThread.size());
 		for(Integer i : clientThread.keySet())
 		{
 			//clientThread.get(i).sendMessage("request");
-			System.out.println(request.getMessage() + "-"+request.getSourceNode().getId() + i);
+			
 			clientThread.get(i).sendMessage(request);
 		}
 
@@ -231,9 +238,9 @@ public class Main {
 			System.out.println("exception while writing to resource process socket");
 			e1.printStackTrace();
 		}
-		
+
 		System.out.println("Application main time stamp" + node.getRequestTimestamp());
-		node.vectorClock[node.getId()] = node.vectorClock[node.getId()]+1;
+		
 		double lambda = 1.0 / csExecutionTime; 
 		Random defaultR = new Random();
 		try {        	
@@ -244,6 +251,21 @@ public class Main {
 		}
 		System.out.println("CSExecution "+ node.getId());
 		Main.csEnter = false;
+		try {
+			if(resourceFlag)
+			{
+				resourceOIS = new ObjectInputStream(resourceSocket.getInputStream());
+				Message r= (Message)resourceOIS.readObject();
+				resourceFlag = false;
+			}
+			else
+				{
+					Message d= (Message)resourceOIS.readObject();
+				}
+		} catch (IOException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//		while(!ackFromResourceForCSEnter)
 		//		{
 		//			
@@ -269,7 +291,7 @@ public class Main {
 		Message msg = new Message();
 		msg.setMessage("csexit");
 		msg.setSourceNode(m.node);
-		
+
 		try {
 			resourceOOS.writeObject(msg);
 			resourceOOS.flush();
@@ -282,16 +304,16 @@ public class Main {
 		Message release = new Message();
 		release.setMessage("release");
 		release.setSourceNode(node);
-		
+
 		for(Integer i : clientThread.keySet())
 		{
 			//clientThread.get(i).sendMessage("release");
-			System.out.println(release.getMessage() + "-"+release.getSourceNode().getId() + i);
+			
 			clientThread.get(i).sendMessage(release);
 		}
 		//1) unlock the resource (send unlock message to Resource Process)
-		
-		
+
+
 		//		while(!ackFromResourceForCSExit)
 		//		{
 		//			
@@ -305,7 +327,7 @@ public class Main {
 		double d = -(Math.log(r.nextDouble()) / p);
 		return d;
 	}
-	
+
 	public synchronized void grant(Message m)
 	{
 		System.out.println("Message "+ m.getMessage() + " Source "+ m.getSourceNode().getId() + " Destination "+m.getDestinationNode().getId());
@@ -315,9 +337,9 @@ public class Main {
 		}else {
 			node.setTimestamp(node.getTimestamp()+1);
 			System.out.println("Time stamp else " + node.getTimestamp());
-			
+
 		}
-//		node.getGrant().add(m.getSourceNode());
+		//		node.getGrant().add(m.getSourceNode());
 		node.grant.put(m.getSourceNode().getId(), m.getSourceNode());
 		System.out.print("Node "+ node.getId() + " Grant list ");
 		for(Integer n: node.grant.keySet())
@@ -325,8 +347,8 @@ public class Main {
 			System.out.print("(" + node.grant.get(n).getId() + "),");
 		}
 		System.out.println();
-		
-	
+
+
 		//node.setFailedList(removeElementFromList(node.getFailedList(), m.getSourceNode().getId()));
 		node.deleteFromFailedList(m.getSourceNode().getId());
 
@@ -335,15 +357,16 @@ public class Main {
 		{
 			synchronized(this)
 			{
-				
+
 				Main.csEnter = true;
 				node.grant.clear();
+				node.inquireQuorum.clear();
 				node.setRequestTimestamp(node.getTimestamp());
 				//System.out.println("Main request timestamp" + node.getRequestTimestamp());
 			}
 			//go into critical section
 		}
-	
+
 	}
 
 	public synchronized void inquire(Message m)
@@ -356,7 +379,7 @@ public class Main {
 		}
 		if(node.getFailedList().size()>0)
 		{	
-			
+
 			node.deleteFromGrant(m.getSourceNode().getId());
 			node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
 			//node.getInquireQuorum().add(m.getSourceNode());
@@ -366,9 +389,9 @@ public class Main {
 				System.out.print("(" + node.inquireQuorum.get(n).getId() + ")");
 			}
 			System.out.println();
-			
+
 			node.setTimestamp(node.getTimestamp()+1);
-			
+
 			for(Integer n:node.inquireQuorum.keySet())
 			{
 				Message m1 = new Message();
@@ -382,7 +405,7 @@ public class Main {
 				m1.setMessage("yield");
 				sendMessage(m1);*/
 			}
-			
+
 			node.inquireQuorum.clear();
 
 		}
@@ -409,23 +432,26 @@ public class Main {
 		//1) delete first element from the main queue
 		//node.getQueue().remove(0);
 		queue.remove(0);
-		System.out.println("HAHAHAHAHAHA");
+		
 		//for(Node n : node.getQueue())
+		System.out.println("Nilesh");
 		for(Node n : queue)
 		{
-			
 			System.out.println(n.getId() + " " + n.getRequestTimestamp() + " " + n.getTimestamp());
 		}
+		System.out.println("Gupta");
 		//mn.minHeapify(node.getQueue(), 0);
 		node.setGrantFlag(false);
-		
+
 		//2) Add waitingForYield list to original queue
-		for(Entry<Integer, Node> n : node.getWaitingForYield().entrySet())
+		System.out.print("Node "+ node.getId() + " wait for list ");
+		for(Integer n : node.waitingForYield.keySet())
 		{
 			//node.getQueue().add(n.getValue());
-			queue.add(n.getValue());
+			queue.add(node.waitingForYield.get(n));
+			System.out.print("("+node.waitingForYield.get(n).getRequestTimestamp()+","+n+")");
 		}
-		
+
 		node.setWaitingForYield(new HashMap<Integer, Node>());
 		//if(node.getQueue().size()>0)
 		if(queue.size()>0)
@@ -438,10 +464,10 @@ public class Main {
 				System.out.print("("+n.getRequestTimestamp()+","+n.getId()+"),");
 			}
 			System.out.println();
-			
+
 			//mn.buildMinHeap(node.getQueue());
 			mn.buildMinHeap(queue);
-			
+
 			System.out.println("After build heap");
 			System.out.print("Node "+node.getId() + " PQ ");
 			//for(Node n : node.getQueue())
@@ -450,7 +476,7 @@ public class Main {
 				System.out.print("("+n.getRequestTimestamp()+","+n.getId()+",");
 			}
 			System.out.println();
-			
+
 			//node.setGrantOwner(node.getQueue().get(0));
 			node.setGrantOwner(queue.get(0));
 			Message sendGrant = new Message();
@@ -462,7 +488,7 @@ public class Main {
 			return sendGrant;
 			/*try {
 				//writeMessage(sendGrant);
-				
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -484,9 +510,9 @@ public class Main {
 			//node.getQueue().add(msg.getSourceNode());
 			queue.add(msg.getSourceNode());
 			System.out.println("Node "+ node.getId() + " PQ first"+ queue.get(0).getId() + " RTS "+ queue.get(0).getRequestTimestamp() + " TS " +queue.get(0).getTimestamp());
-//			System.out.println("printing source");
-//			System.out.println("Node "+ node.getId() + " PQ first"+ msg.getSourceNode().getId() + " RTS "+ msg.getSourceNode().getRequestTimestamp() + " TS " +msg.getSourceNode().getTimestamp());
-			
+			//			System.out.println("printing source");
+			//			System.out.println("Node "+ node.getId() + " PQ first"+ msg.getSourceNode().getId() + " RTS "+ msg.getSourceNode().getRequestTimestamp() + " TS " +msg.getSourceNode().getTimestamp());
+
 			//send grant to the source of msg
 			node.setTimestamp(node.getTimestamp()+1);
 			Message grantMsg = new Message();
@@ -502,7 +528,7 @@ public class Main {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}*/
-									
+
 		}
 		else 
 		{
@@ -517,10 +543,10 @@ public class Main {
 				if((msg.getSourceNode().getRequestTimestamp() > queue.get(0).getRequestTimestamp()) || ((msg.getSourceNode().getRequestTimestamp()==queue.get(0).getRequestTimestamp()) && msg.getSourceNode().getId()>queue.get(0).getId()))
 				{	//msg's timestamp is more than grant owner's timestamp
 					//put this req msg into the original priority queue
-			
+
 					//node.getQueue().add(msg.getSourceNode());
 					queue.add(msg.getSourceNode());
-					
+
 					System.out.println("Before build heap");
 					System.out.print("Node "+node.getId() + " PQ ");
 					//for(Node n : node.getQueue())
@@ -531,7 +557,7 @@ public class Main {
 					System.out.println();
 					//mn.buildMinHeap(node.getQueue());
 					mn.buildMinHeap(queue);
-					
+
 					System.out.println("After build heap");
 					System.out.print("Node "+node.getId() + " PQ ");
 					//for(Node n : node.getQueue())
@@ -574,7 +600,7 @@ public class Main {
 					} 
 				}
 			}
-			
+
 		}
 		return null;
 	}
@@ -591,7 +617,7 @@ public class Main {
 		System.out.println("Node "+node.getId() + " inside failed : inqQuorum size "+ node.getInquireQuorum().size());
 		if(node.getInquireQuorum().size()>0)
 		{
-			
+
 			//for(Node n: node.getInquireQuorum())
 			for(Integer n : node.inquireQuorum.keySet())
 			{
@@ -601,18 +627,18 @@ public class Main {
 				send.setSourceNode(node);
 				Main.clientThread.get(n).sendMessage(send);
 				//Main.clientThread.get(n).sendMessage("yield");
-				
+
 				/*Message send = new Message();
 				node.setTimestamp(node.getTimestamp()+1);
 				send.setDestinationNode(destinationNode);
 				send.setSourceNode(sourceNode);
 				send.setMessage("yield");
 				sendMessage(send);*/
-				
+
 				node.deleteFromGrant(n);
 				//node.setGrant(removeElementFromList(node.getGrant(), n.getId()));
 
-										
+
 				//alm.add(send);
 				System.out.print("Node " + node.getId() + " Grant list after deletion ");
 				//for(Node a: node.getGrant())
@@ -621,13 +647,13 @@ public class Main {
 					System.out.print(node.grant.get(a).getId() + ",");
 				}
 				System.out.println();
-				
+
 			}
 			System.out.println("Check alm Node "+ node.getId());
 			node.inquireQuorum.clear();
 			//node.setInquireQuorum(new ArrayList<Node>());
-//			SocketConnectionClient c = new SocketConnectionClient(alm);
-//			c.start();	
+			//			SocketConnectionClient c = new SocketConnectionClient(alm);
+			//			c.start();	
 		}
 	}
 	public synchronized Message yield(Message msg)
@@ -640,12 +666,14 @@ public class Main {
 		}
 		if(node.getWaitingForYield().size()>0)
 		{
-			for(Entry<Integer, Node> n : node.getWaitingForYield().entrySet())
+			System.out.println("Node " + node.getId() + " " + "wait of yield "  );
+			for(Integer n : node.waitingForYield.keySet())
 			{
 				//node.getQueue().add(n.getValue());
-				queue.add(n.getValue());
+				System.out.print("("+node.waitingForYield.get(n).getRequestTimestamp()+","+node.waitingForYield.get(n).getId()+")");
+				queue.add(node.waitingForYield.get(n));
 			}
-			
+			System.out.println();
 			//mn.buildMinHeap(node.getQueue());
 			mn.buildMinHeap(queue);
 			node.setTimestamp(node.getTimestamp()+1);
@@ -667,6 +695,6 @@ public class Main {
 		}
 		return null;
 	}
-	
+
 
 }

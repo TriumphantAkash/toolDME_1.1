@@ -7,11 +7,14 @@ public class CSrequestNodeListenerInstance extends Thread{
 
 	Socket socket;
 	ObjectInputStream ois;
+	ObjectOutputStream oos;
 	Message msg;
 	ResourceProcess rProcess;
 	CSrequestNodeListenerInstance(Socket sock, ResourceProcess rp) throws IOException{
 		this.socket = sock;
 		this.ois = new ObjectInputStream(sock.getInputStream());
+		this.oos = new ObjectOutputStream(sock.getOutputStream());
+		this.
 		msg = new Message();
 		rProcess = rp;
 	}
@@ -20,7 +23,7 @@ public class CSrequestNodeListenerInstance extends Thread{
 		
 		
 		while(true){
-			ResourceProcess.totalRequest--;
+			
 			try {
 				msg = (Message)ois.readObject();
 			} catch (ClassNotFoundException | IOException e) {
@@ -30,6 +33,17 @@ public class CSrequestNodeListenerInstance extends Thread{
 			}
 			
 			rProcess.readCSMessage(msg);
+			Message m = new Message();
+			m.setMessage("csexit");
+			try {
+				oos.writeObject(m);
+				oos.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 			
 		}
 	}

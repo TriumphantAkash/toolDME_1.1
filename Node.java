@@ -20,7 +20,6 @@ public class Node implements Serializable{
 	public HashMap<Integer,Node> inquireQuorum;
 	public HashMap<Integer,Node> failedList;
 	private int requestTimestamp =1;
-	public int[] vectorClock;
 	public Node()
 	{
 		grant = new HashMap<Integer,Node>();
@@ -94,14 +93,6 @@ public class Node implements Serializable{
 
 	public void setRequestTimestamp(int requestTimestamp) {
 		this.requestTimestamp = requestTimestamp;
-	}
-
-	public int[] getVectorClock() {
-		return vectorClock;
-	}
-
-	public void setVectorClock(int[] vectorClock) {
-		this.vectorClock = vectorClock;
 	}
 
 	public HashMap<Integer, Node> getGrant() {

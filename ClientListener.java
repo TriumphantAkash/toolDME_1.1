@@ -1,5 +1,6 @@
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,18 +12,17 @@ import java.util.Map.Entry;
 
 public class ClientListener extends Thread{
 	
-	private ObjectInputStream ois;
+	//private ObjectInputStream ois;
+	BufferedReader br;
 	private Message msg;
 	private Main main;
-	ClientListener(ObjectInputStream ois, Message msg, Main main){
-		this.ois = ois;
+	ClientListener(BufferedReader br, Message msg, Main main){
+		this.br = br;
 		this.main = main;
 		this.msg = msg;
 	}
 	public void run(){
-		
-
-		MinHeap mn = new MinHeap();
+	
 		while(true){
 			//1) process the message
 			synchronized(this)
@@ -80,10 +80,27 @@ public class ClientListener extends Thread{
 
 				}
 				try {
-					this.msg = (Message)this.ois.readObject();
+					//this.msg = (Message)this.ois.readObject();
+					
+					String message = br.readLine();
+					
+					 String[] split = message.split("\\s+");
+					 
+					 msg = new Message();
+					 Node source = Main.hostNameHM.get(Integer.parseInt(split[1]));
+					 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
+					 source.setTimestamp(Integer.parseInt(split[3]));
+					 if(split.length==5)
+					 {
+						 source.setRequestTimestamp(Integer.parseInt(split[4]));
+					 }
+					 
+					 msg.setMessage(split[0]);
+					 msg.setSourceNode(source);
+					 msg.setDestinationNode(destination);
 //					Message test = (Message)this.ois.readObject();
 //					System.out.println("Nilesh " + test.getMessage() + " " + test.getSourceNode().getId() + " RTS " + test.getSourceNode().getRequestTimestamp());
-				} catch (ClassNotFoundException | IOException e) {
+				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -99,11 +116,16 @@ public class ClientListener extends Thread{
 	
 	public synchronized void writeMessage(Message am) throws UnknownHostException, IOException{
 		
+		String message = new String();
+		message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp() +" " + "1";
 			//ObjectOutputStream oos =
 		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
-		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
+		/*SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
-		
+*/
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes(message);
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes("\n");
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
 			//oos.writeObject(am);
 			//oos.close();
 	}
