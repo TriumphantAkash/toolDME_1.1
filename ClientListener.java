@@ -22,12 +22,7 @@ public class ClientListener extends Thread{
 		this.msg = msg;
 	}
 	public void run(){
-<<<<<<< HEAD
-	
-=======
-		
 
->>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
 		while(true){
 			//1) process the message
 			synchronized(this)
@@ -86,7 +81,7 @@ public class ClientListener extends Thread{
 				}
 				try {
 					//this.msg = (Message)this.ois.readObject();
-<<<<<<< HEAD
+
 					
 					String message = br.readLine();
 					
@@ -104,9 +99,7 @@ public class ClientListener extends Thread{
 					 msg.setMessage(split[0]);
 					 msg.setSourceNode(source);
 					 msg.setDestinationNode(destination);
-=======
-					this.msg = (Message)this.ois.readUnshared();
->>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
+
 //					Message test = (Message)this.ois.readObject();
 //					System.out.println("Nilesh " + test.getMessage() + " " + test.getSourceNode().getId() + " RTS " + test.getSourceNode().getRequestTimestamp());
 				} catch (IOException e) {
@@ -129,16 +122,13 @@ public class ClientListener extends Thread{
 		message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp() +" " + "1";
 			//ObjectOutputStream oos =
 		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
-<<<<<<< HEAD
+
 		/*SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
 */
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes(message);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes("\n");
-=======
-		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
-		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeUnshared(am);
->>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
+
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
 			//oos.writeObject(am);
 			//oos.close();

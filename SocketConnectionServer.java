@@ -38,7 +38,7 @@ public class SocketConnectionServer extends Thread{
 			{
 				sock = serverSock.accept();
 
-<<<<<<< HEAD
+
 				//ObjectInputStream ois = new ObjectInputStream(sock.getInputStream());
 				//ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
 				DataOutputStream out = new DataOutputStream(sock.getOutputStream());
@@ -63,13 +63,6 @@ public class SocketConnectionServer extends Thread{
 				 msg.setSourceNode(source);
 				 msg.setDestinationNode(destination);
 				
-=======
-				ObjectInputStream ois = new ObjectInputStream(sock.getInputStream());
-				ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
-				//Message msg = (Message) (ois.readObject());
-				Message msg = (Message) (ois.readUnshared());
-				clientOS.put(msg.getSourceNode().getId(), oos);
->>>>>>> 3516ed1f2e73031ee3155efb281e05036ba21cb8
 				
 				clientOS.put(msg.getSourceNode().getId(), out);
 				
