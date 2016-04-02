@@ -54,9 +54,14 @@ public class SocketConnectionServer extends Thread{
 				 source = Main.hostNameHM.get(Integer.parseInt(split[1]));
 				 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
 				 source.setTimestamp(timestamp);
-				 if(split.length==5)
+				 if(split[0].equalsIgnoreCase("request"))
 				 {
+					 Main.requestTimeStamp.put(Integer.parseInt(split[1]),Integer.parseInt(split[4]));
 					 source.setRequestTimestamp(Integer.parseInt(split[4]));
+				 }
+				 else
+				 {
+					 source.setRequestTimestamp(Main.requestTimeStamp.get(Integer.parseInt(split[1])));
 				 }
 				 
 				 msg.setMessage(split[0]);

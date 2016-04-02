@@ -54,7 +54,7 @@ public class Client extends Thread{
 		}
 		else
 		{
-			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ destinationNode.getId() + " "+main.node.getTimestamp() +" " + "1";
+			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ destinationNode.getId() + " "+main.node.getTimestamp();
 		
 		}
 		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
@@ -98,7 +98,13 @@ public class Client extends Thread{
 				 Node source = Main.hostNameHM.get(Integer.parseInt(split[1]));
 				 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
 				 source.setTimestamp(Integer.parseInt(split[3]));
-				 source.setRequestTimestamp(Integer.parseInt(split[4]));
+				 if(Main.requestTimeStamp.containsKey(Integer.parseInt(split[1])))
+				 {
+					 source.setRequestTimestamp(Main.requestTimeStamp.get(Integer.parseInt(split[1])));
+				 }
+				 else
+					 source.setRequestTimestamp(1);
+				 //source.setRequestTimestamp(Integer.parseInt(split[4]));
 				 
 				 m.setMessage(split[0]);
 				 m.setSourceNode(source);

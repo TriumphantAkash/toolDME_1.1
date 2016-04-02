@@ -26,6 +26,7 @@ public class Main {
 	public static volatile boolean ackFromResourceForCSEnter = false;
 	public static volatile boolean ackFromResourceForCSExit = false;
 	public static HashMap<Integer, Client> clientThread;
+	public static HashMap<Integer,Integer> requestTimeStamp;
 
 	static Socket resourceSocket;
 	static ObjectOutputStream resourceOOS;
@@ -42,7 +43,7 @@ public class Main {
 		node = new Node();
 		resource = new Node();
 		this.clientThread = new HashMap<Integer, Client>();
-
+		requestTimeStamp = new HashMap<Integer, Integer>();
 		this.mn = new MinHeap();
 		queue = new ArrayList<Node>();
 	}
@@ -91,17 +92,25 @@ public class Main {
 		
 		}
 		
+		try {
+			Thread.sleep(3000);
+
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		while(m.numberOfRequest>0)
 			//int counter = 2;
 			//while(counter>0)
 		{
 			
-			
+			//if(m.node.getId()!=0)
+			//{
 			m.csEnter();
 			m.csExecution();
 			m.csExit();
-			
+			//}
 			m.numberOfRequest = m.numberOfRequest - 1;
 			//counter--;
 			double lambda = 1.0 / m.interRequestDelay; 
@@ -382,7 +391,10 @@ public class Main {
 		{	
 
 			node.deleteFromGrant(m.getSourceNode().getId());
-			node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
+			if(!node.inquireQuorum.containsKey(m.getSourceNode().getId()))
+			{				
+				node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
+			}
 			//node.getInquireQuorum().add(m.getSourceNode());
 			System.out.print("Inquire List ");
 			for(Integer n: node.inquireQuorum.keySet())
@@ -412,7 +424,10 @@ public class Main {
 		}
 		else
 		{
-			node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
+			if(!node.inquireQuorum.containsKey(m.getSourceNode().getId()))
+			{
+				node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
+			}
 			System.out.println("else inquire");
 			System.out.print("Node "+ node.getId() +"Inquire List ");
 			for(Integer n:node.inquireQuorum.keySet())
@@ -581,7 +596,10 @@ public class Main {
 					}*/	
 				}else
 				{
-					node.getWaitingForYield().put(msg.getSourceNode().getId(), msg.getSourceNode());	//add this req to waitingForYield list
+					if(!node.waitingForYield.containsKey(msg.getSourceNode().getId()))
+					{
+					node.waitingForYield.put(msg.getSourceNode().getId(), msg.getSourceNode());	//add this req to waitingForYield list
+					}
 					if(!node.isInquireFlag()) 
 					{//check inquire Flag so that don't send inquire to a node again and again
 						//send inquire to grant owner
@@ -614,7 +632,10 @@ public class Main {
 			node.setTimestamp(node.getTimestamp()+1);
 		}
 		//node.getFailedList().add(m.getSourceNode());
+		if(!node.failedList.containsKey(m.getSourceNode().getId()))
+		{
 		node.failedList.put(m.getSourceNode().getId(), m.getSourceNode());
+		}
 		System.out.println("Node "+node.getId() + " inside failed : inqQuorum size "+ node.getInquireQuorum().size());
 		if(node.getInquireQuorum().size()>0)
 		{

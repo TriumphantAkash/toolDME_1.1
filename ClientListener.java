@@ -91,9 +91,14 @@ public class ClientListener extends Thread{
 					 Node source = Main.hostNameHM.get(Integer.parseInt(split[1]));
 					 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
 					 source.setTimestamp(Integer.parseInt(split[3]));
-					 if(split.length==5)
+					 if(split[0].equalsIgnoreCase("request"))
 					 {
+						 Main.requestTimeStamp.put(Integer.parseInt(split[1]),Integer.parseInt(split[4]));
 						 source.setRequestTimestamp(Integer.parseInt(split[4]));
+					 }
+					 else
+					 {
+						 source.setRequestTimestamp(Main.requestTimeStamp.get(Integer.parseInt(split[1])));
 					 }
 					 
 					 msg.setMessage(split[0]);
@@ -119,7 +124,7 @@ public class ClientListener extends Thread{
 	public synchronized void writeMessage(Message am) throws UnknownHostException, IOException{
 		
 		String message = new String();
-		message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp() +" " + "1";
+		message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp();
 			//ObjectOutputStream oos =
 		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
 
