@@ -14,12 +14,13 @@ public class ClientListener extends Thread{
 	
 	//private ObjectInputStream ois;
 	BufferedReader br;
-	private Message msg;
+	private String msg;
 	private Main main;
-	ClientListener(BufferedReader br, Message msg, Main main){
+	ClientListener(BufferedReader br, String msg, Main main){
 		this.br = br;
 		this.main = main;
 		this.msg = msg;
+		
 	}
 	public void run(){
 
@@ -27,64 +28,18 @@ public class ClientListener extends Thread{
 			//1) process the message
 			synchronized(this)
 			{
-				if(msg.getMessage().equalsIgnoreCase("request"))
-				{
-					Message receive = main.request(msg);
-					if(receive!=null)
-					{
-						try {
-							writeMessage(receive);
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-
-				}
-				else if(msg.getMessage().equalsIgnoreCase("release"))
-				{
-					Message receive = main.release(msg);
-					if(receive!=null)
-					{
-						try {
-							writeMessage(receive);
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-
 				
-				else if(msg.getMessage().equalsIgnoreCase("yield"))
-				{
-					Message receive = main.yield(msg);
-					if(receive!=null)
-					{
-						try {
-							writeMessage(receive);
-						} catch (UnknownHostException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-
-				}
 				try {
+					
+						
+						msg = br.readLine();
+						writeMessage(msg);
+					
 					//this.msg = (Message)this.ois.readObject();
 
 					
-					String message = br.readLine();
 					
+					/*
 					 String[] split = message.split("\\s+");
 					 
 					 msg = new Message();
@@ -104,7 +59,7 @@ public class ClientListener extends Thread{
 					 msg.setMessage(split[0]);
 					 msg.setSourceNode(source);
 					 msg.setDestinationNode(destination);
-
+*/
 //					Message test = (Message)this.ois.readObject();
 //					System.out.println("Nilesh " + test.getMessage() + " " + test.getSourceNode().getId() + " RTS " + test.getSourceNode().getRequestTimestamp());
 				} catch (IOException e) {
@@ -121,20 +76,28 @@ public class ClientListener extends Thread{
 	
 	//used to send message to the client/(s)
 	
-	public synchronized void writeMessage(Message am) throws UnknownHostException, IOException{
+	public synchronized void writeMessage(String am) throws UnknownHostException, IOException{
 		
-		String message = new String();
-		message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp();
+		//String message = new String();
+		//message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp();
+		
+		String[] split = am.split("\\s+");
+		int sendNode = Integer.parseInt(split[2]);
 			//ObjectOutputStream oos =
 		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
 
 		/*SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
 */
-		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes(message);
+		/*SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes(message);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes("\n");
 
-		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();*/
+		
+		SocketConnectionServer.clientOS.get(sendNode).writeBytes(am);
+		SocketConnectionServer.clientOS.get(sendNode).writeBytes("\n");
+
+		SocketConnectionServer.clientOS.get(sendNode).flush();
 			//oos.writeObject(am);
 			//oos.close();
 	}

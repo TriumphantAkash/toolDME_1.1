@@ -1,14 +1,10 @@
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-
 
 public class Client extends Thread{
 	Main main;
@@ -22,7 +18,6 @@ public class Client extends Thread{
 	
 	 public Client(Node destinationNode, Main main)
 	{
-		 
 		this.main = main;
 		//this.sourceNode = sourceNode;
 		this.destinationNode = destinationNode;
@@ -31,7 +26,7 @@ public class Client extends Thread{
 			s = new Socket(destinationNode.getHostname(), destinationNode.getPortNumber());
 			//oos = new ObjectOutputStream(s.getOutputStream());
 			out = new DataOutputStream(s.getOutputStream());
-			
+			System.out.println("Client started "+ this.main.node.getId());
 			
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
@@ -48,22 +43,22 @@ public class Client extends Thread{
 		//send.setDestinationNode(destinationNode);
 		
 		String message = new String();
-		if(send.getMessage().equalsIgnoreCase("request"))
+		if(send.getMessage().equalsIgnoreCase("hello"))
 		{
-			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ destinationNode.getId() + " "+send.getSourceNode().getTimestamp() +" " + send.getSourceNode().getRequestTimestamp();
+			message = send.getMessage()+" "+send.getSourceNode().getId();
 		}
 		else
 		{
-			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ destinationNode.getId() + " "+main.node.getTimestamp();
-		
+			message = send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId() + " "+send.getSourceNode().getTimestamp() +" " + send.getSourceNode().getRequestTimestamp();
 		}
+		
 		 //System.out.println(send.getMessage() + " " + send.getSourceNode().getId() + " "+ send.getDestinationNode().getId());
 		 try {
 			//oos.reset();
 			//oos.writeObject(send);
 
 			//oos.flush();
-			 System.out.println("Message" + message);
+			// System.out.println("Message" + message);
 			 out.writeBytes(message);
 			 out.writeBytes("\n");
 			 out.flush();
@@ -98,31 +93,43 @@ public class Client extends Thread{
 				 Node source = Main.hostNameHM.get(Integer.parseInt(split[1]));
 				 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
 				 source.setTimestamp(Integer.parseInt(split[3]));
-				 if(Main.requestTimeStamp.containsKey(Integer.parseInt(split[1])))
+				 /*if(Main.requestTimeStamp.containsKey(Integer.parseInt(split[1])))
 				 {
 					 source.setRequestTimestamp(Main.requestTimeStamp.get(Integer.parseInt(split[1])));
 				 }
 				 else
 					 source.setRequestTimestamp(1);
 				 //source.setRequestTimestamp(Integer.parseInt(split[4]));
-				 
+				 */
+				 source.setRequestTimestamp(Integer.parseInt(split[4]));
 				 m.setMessage(split[0]);
 				 m.setSourceNode(source);
 				 m.setDestinationNode(destination);
 
-				
-				if(m.getMessage().equalsIgnoreCase("grant"))
-				{
-					main.grant(m);
-				}
-				else if(m.getMessage().equalsIgnoreCase("inquire"))
-				{
-					main.inquire(m);
-				}
-				else if(m.getMessage().equalsIgnoreCase("failed"))
-				{
-					main.failed(m);
-				}
+				 if(m.getMessage().equalsIgnoreCase("request"))
+					{
+						main.request(m);
+					}
+					else if(m.getMessage().equalsIgnoreCase("release"))
+					{
+						main.release(m);
+					}
+					else if(m.getMessage().equalsIgnoreCase("grant"))
+					{
+						main.grant(m);
+					}
+					else if(m.getMessage().equalsIgnoreCase("yield"))
+					{
+						main.yield(m);
+					}
+					else if(m.getMessage().equalsIgnoreCase("inquire"))
+					{
+						main.inquire(m);
+					}
+					else if(m.getMessage().equalsIgnoreCase("failed"))
+					{
+						main.failed(m);
+					}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -130,7 +137,7 @@ public class Client extends Thread{
 		 }
 	 }
 	 
-	 public ArrayList<Node> removeElementFromList(ArrayList<Node> al, Integer id)
+	/* public ArrayList<Node> removeElementFromList(ArrayList<Node> al, Integer id)
 		{
 			ArrayList<Node> alm = new ArrayList<Node>();
 			for(Node n : al)
@@ -144,6 +151,6 @@ public class Client extends Thread{
 			}
 			
 			return alm;
-		}
+		}*/
 	 
 }

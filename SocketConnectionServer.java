@@ -14,13 +14,15 @@ import java.util.HashMap;
 public class SocketConnectionServer extends Thread{
 
 	Main m ;
+	Node node;
 	public volatile static HashMap<Integer,DataOutputStream> clientOS;
 
 	private static ServerSocket serverSock;
-	public SocketConnectionServer(Main m)
+	public SocketConnectionServer(Node node,Main m)
 	{
 		this.m = m;
 		this.clientOS = new HashMap<Integer, DataOutputStream>();
+		this.node = node;
 	}
 
 	public void run()
@@ -31,24 +33,23 @@ public class SocketConnectionServer extends Thread{
 	public synchronized void go()
 	{
 		try{
-			serverSock = new ServerSocket(m.getNode().getPortNumber());
-			System.out.println("Server started " + m.getNode().getId());
+			/*serverSock = new ServerSocket(m.getNode().getPortNumber());
+			System.out.println("Server started " + m.getNode().getId());*/
+			serverSock = new ServerSocket(node.getPortNumber());
+			System.out.println("Server started " + node.getId());
 			Socket sock;
 			while(true)
 			{
 				sock = serverSock.accept();
 
-
-				//ObjectInputStream ois = new ObjectInputStream(sock.getInputStream());
-				//ObjectOutputStream oos = new ObjectOutputStream(sock.getOutputStream());
 				DataOutputStream out = new DataOutputStream(sock.getOutputStream());
 				BufferedReader br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-				//Message msg = (Message) (ois.readObject());
+
 				String message = br.readLine();
-				 String[] split = message.split("\\s+");
-				 int timestamp = Integer.parseInt(split[3]);
+				String[] split = message.split("\\s+");
 				 
 				 
+				 /*
 				 Message msg = new Message();
 				 Node source = new Node(); 
 				 source = Main.hostNameHM.get(Integer.parseInt(split[1]));
@@ -66,12 +67,13 @@ public class SocketConnectionServer extends Thread{
 				 
 				 msg.setMessage(split[0]);
 				 msg.setSourceNode(source);
-				 msg.setDestinationNode(destination);
+				 msg.setDestinationNode(destination);*/
 				
 				
-				clientOS.put(msg.getSourceNode().getId(), out);
 				
-				ClientListener clientListener = new ClientListener(br, msg, m);
+				clientOS.put(Integer.parseInt(split[1]), out);
+				
+				ClientListener clientListener = new ClientListener(br, message, m);
 				clientListener.start();
 				//ois.close();
 				
