@@ -542,6 +542,7 @@ public class Main {
 		}else {
 			node.setTimestamp(node.getTimestamp()+1);
 		}
+		node.setInquireFlag(false);
 		if(node.getWaitingForYield().size()>0)
 		{
 			//for(Node n : node.getWaitingForYield())
@@ -627,6 +628,7 @@ public class Main {
 			
 			for(Integer n : node.inquireQuorum.keySet())
 			{
+				node.failedList.put(n, node.inquireQuorum.get(n));
 				Message m1 = new Message();
 				m1.setDestinationNode(node.inquireQuorum.get(n));
 				m1.setSourceNode(node);
@@ -671,6 +673,7 @@ public class Main {
 			for(Integer n : node.inquireQuorum.keySet())
 			{
 				System.out.println("Node "+node.getId() + " inside failed inq quorum : "+ n);
+				node.failedList.put(n, node.inquireQuorum.get(n));
 				Message send = new Message();
 				node.setTimestamp(node.getTimestamp()+1);
 				send.setDestinationNode(node.inquireQuorum.get(n));

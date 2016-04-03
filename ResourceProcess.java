@@ -130,7 +130,7 @@ public class ResourceProcess {
 
 					resourceUseFlag = false;
 				}	
-				//System.out.println("Counter" + counter);
+				System.out.println("Counter" + counter);
 				if(counter==(totalRequest) && dmeHolds)
 				{
 					System.out.println("[DME RESULT] \"DME Hold\" [DME RESULT]");
