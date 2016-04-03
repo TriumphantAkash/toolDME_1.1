@@ -37,7 +37,7 @@ public class Main {
 	static Main m;
 	static boolean resourceFlag = true;
 	public static HashMap<Integer,Node> hostNameHM;
-
+	public static HashMap<Integer,Node> sendFailed;
 	ArrayList<Node> queue;
 	MinHeap mn;
 
@@ -50,6 +50,7 @@ public class Main {
 		this.mn = new MinHeap();
 		queue = new ArrayList<Node>();
 		serverNode = new Node();
+		sendFailed = new HashMap<Integer, Node>();
 	}
 
 	public static void main(String[] args) {
@@ -310,13 +311,15 @@ public class Main {
 		}
 		for(Node n : node.getQuorum())
 		{
-			
+			node.inquireQuorum.clear();
+			node.failedList.clear();
 			Message release = new Message();
 			release.setMessage("release");
 			release.setSourceNode(node);
 			release.setDestinationNode(n);
 			clientThread.get(serverNodeId).sendMessage(release);
 			node.inquireQuorum.clear();
+			node.failedList.clear();
 		}
 		/*for(Integer i : clientThread.keySet())
 		{
@@ -434,15 +437,17 @@ public class Main {
 		queue.remove(0);
 		//mn.minHeapify(queue, 0);
 		node.setGrantFlag(false);
-		
+		node.setInquireFlag(false);
 		//2) Add waitingForYield list to original queue
 		/*for(Node n:node.getWaitingForYield())
 		{
 			queue.add(n);
 		}*/
+		sendFailed.putAll(node.waitingForYield);
 		for(Integer i : node.waitingForYield.keySet())
 		{
 			queue.add(node.waitingForYield.get(i));
+			
 		}
 		
 		//node.setWaitingForYield(new ArrayList<Node>());
@@ -467,6 +472,17 @@ public class Main {
 			}
 			System.out.println();
 			
+			sendFailed.remove(queue.get(0).getId());
+			for(Integer i : sendFailed.keySet())
+			{
+				Message failed = new Message();
+				failed.setMessage("failed");
+				failed.setSourceNode(node);
+				failed.setDestinationNode(sendFailed.get(i));
+				clientThread.get(serverNodeId).sendMessage(failed);
+			}
+			
+			sendFailed.clear();
 			node.setGrantOwner(queue.get(0));
 			
 			Message sendGrant = new Message();
@@ -529,11 +545,42 @@ public class Main {
 		if(node.getWaitingForYield().size()>0)
 		{
 			//for(Node n : node.getWaitingForYield())
+			sendFailed.putAll(node.waitingForYield);
 			for(Integer n : node.waitingForYield.keySet())
 			{
 				queue.add(node.waitingForYield.get(n));
 			}
+			System.out.println("Before build heap");
+			System.out.print("Node "+node.getId() + " PQ ");
+			for(Node n : queue)
+			{
+				System.out.print("("+n.getRequestTimestamp()+","+n.getId()+"),");
+			}
+			System.out.println();
 			mn.buildMinHeap(queue);
+			
+			System.out.println("After build heap");
+			System.out.print("Node "+node.getId() + " PQ ");
+			for(Node n : queue)
+			{
+				System.out.print("("+n.getRequestTimestamp()+","+n.getId()+"),");
+			}
+			System.out.println();
+			
+			//mn.buildMinHeap(queue);
+			sendFailed.remove(queue.get(0).getId());
+			for(Integer i : sendFailed.keySet())
+			{
+				Message failed = new Message();
+				failed.setMessage("failed");
+				failed.setSourceNode(node);
+				failed.setDestinationNode(sendFailed.get(i));
+				clientThread.get(serverNodeId).sendMessage(failed);
+			}
+			
+			sendFailed.clear();
+			
+			
 			node.setTimestamp(node.getTimestamp()+1);
 			node.waitingForYield.clear();
 			Message send = new Message();

@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 
 public class SocketConnectionServer extends Thread{
@@ -16,13 +18,14 @@ public class SocketConnectionServer extends Thread{
 	Main m ;
 	Node node;
 	public volatile static HashMap<Integer,DataOutputStream> clientOS;
-
+	public static BlockingQueue<String> b = null;
 	private static ServerSocket serverSock;
 	public SocketConnectionServer(Node node,Main m)
 	{
 		this.m = m;
 		this.clientOS = new HashMap<Integer, DataOutputStream>();
 		this.node = node;
+		b = new ArrayBlockingQueue<String>(1000);
 	}
 
 	public void run()
@@ -33,6 +36,8 @@ public class SocketConnectionServer extends Thread{
 	public synchronized void go()
 	{
 		try{
+			ClientListenerWriter clw = new ClientListenerWriter(b);
+			clw.start();
 			/*serverSock = new ServerSocket(m.getNode().getPortNumber());
 			System.out.println("Server started " + m.getNode().getId());*/
 			serverSock = new ServerSocket(node.getPortNumber());

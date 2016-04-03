@@ -41,10 +41,10 @@ public class MinHeap {
 
 		if(right<heapSize && al.get(right).getRequestTimestamp()<=al.get(smallest).getRequestTimestamp())
 		{
-			if(al.get(right).getRequestTimestamp()<al.get(index).getRequestTimestamp())
+			if(al.get(right).getRequestTimestamp()<al.get(smallest).getRequestTimestamp())
 
 				smallest = right;
-			else if((al.get(right).getId()<al.get(index).getId()))
+			else if((al.get(right).getId()<al.get(smallest).getId()))
 				smallest = right;
 		}
 		if(smallest!=index)

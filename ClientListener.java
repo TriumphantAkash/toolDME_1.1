@@ -9,6 +9,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class ClientListener extends Thread{
 	
@@ -16,10 +18,13 @@ public class ClientListener extends Thread{
 	BufferedReader br;
 	private String msg;
 	private Main main;
+	
+	
 	ClientListener(BufferedReader br, String msg, Main main){
 		this.br = br;
 		this.main = main;
 		this.msg = msg;
+	
 		
 	}
 	public void run(){
@@ -33,7 +38,13 @@ public class ClientListener extends Thread{
 					
 						
 						msg = br.readLine();
-						writeMessage(msg);
+						try {
+							SocketConnectionServer.b.put(msg);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						//writeMessage(msg);
 					
 					//this.msg = (Message)this.ois.readObject();
 
@@ -76,7 +87,7 @@ public class ClientListener extends Thread{
 	
 	//used to send message to the client/(s)
 	
-	public synchronized void writeMessage(String am) throws UnknownHostException, IOException{
+/*	public synchronized void writeMessage(String am) throws UnknownHostException, IOException{
 		
 		//String message = new String();
 		//message = am.getMessage() + " " + am.getSourceNode().getId() + " "+ am.getDestinationNode().getId() + " "+main.node.getTimestamp();
@@ -86,13 +97,13 @@ public class ClientListener extends Thread{
 			//ObjectOutputStream oos =
 		//SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).reset();
 
-		/*SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeObject(am);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
-*/
-		/*SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes(message);
+
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes(message);
 		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).writeBytes("\n");
 
-		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();*/
+		SocketConnectionServer.clientOS.get(am.getDestinationNode().getId()).flush();
 		
 		SocketConnectionServer.clientOS.get(sendNode).writeBytes(am);
 		SocketConnectionServer.clientOS.get(sendNode).writeBytes("\n");
@@ -100,5 +111,5 @@ public class ClientListener extends Thread{
 		SocketConnectionServer.clientOS.get(sendNode).flush();
 			//oos.writeObject(am);
 			//oos.close();
-	}
+	}*/
 }
