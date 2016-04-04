@@ -109,13 +109,18 @@ public class Main {
 			e1.printStackTrace();
 
 		}
+		
 
-		try {
-			Thread.sleep(3000);
-
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+//		try {
+//			Thread.sleep(3000);
+//
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		
+		while(m.totalNode!=SocketConnectionServer.counter)
+		{		
 		}
 
 		while(m.numberOfRequest>0)
