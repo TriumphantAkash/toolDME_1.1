@@ -322,12 +322,7 @@ public class Main {
 			main.inquireQuorum.clear();
 			main.failedList.clear();
 		}
-		/*for(Integer i : clientThread.keySet())
-		{
-			//clientThread.get(i).sendMessage("release");
-
-			clientThread.get(i).sendMessage(release);
-		}*/
+		node.setRequestTimestamp(node.getTimestamp()+1);
 		}
 
 	public double getRandom(Random r, double p) { 
