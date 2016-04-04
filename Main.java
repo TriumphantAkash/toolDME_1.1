@@ -119,19 +119,6 @@ public class Main {
 
 		}
 
-		/*try {
-			Thread.sleep(20000);
-
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		
-		/*while(!Client.startExecution)
-		{
-			
-		}*/
-		//System.out.println("Hello received");
 		while(main.numberOfRequest>0)
 			//int counter = 2;
 			//while(counter>0)

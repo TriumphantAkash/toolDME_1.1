@@ -20,7 +20,9 @@ public class SocketConnectionServer extends Thread{
 	public volatile static HashMap<Integer,DataOutputStream> clientOS;
 	public static BlockingQueue<String> b = null;
 	private static ServerSocket serverSock;
-	public static int counter =0;
+	public static int counter = 0;
+	
+
 	public SocketConnectionServer(Node node,Main m)
 	{
 		this.m = m;
