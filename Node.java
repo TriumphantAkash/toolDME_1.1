@@ -15,17 +15,10 @@ public class Node implements Serializable{
 	private boolean grantFlag;
 	private boolean inquireFlag;
 	private int timestamp =1;
-	public HashMap<Integer,Node> grant;
-	public HashMap<Integer,Node> waitingForYield;
-	public HashMap<Integer,Node> inquireQuorum;
-	public HashMap<Integer,Node> failedList;
+
 	private int requestTimestamp =1;
 	public Node()
 	{
-		grant = new HashMap<Integer,Node>();
-		waitingForYield = new HashMap<Integer,Node>();
-		inquireQuorum = new HashMap<Integer,Node>();
-		failedList = new HashMap<Integer,Node>();
 		//queue = new ArrayList<Node>();
 		quorum = new ArrayList<Node>();
 		
@@ -94,55 +87,5 @@ public class Node implements Serializable{
 	public void setRequestTimestamp(int requestTimestamp) {
 		this.requestTimestamp = requestTimestamp;
 	}
-
-	public HashMap<Integer, Node> getGrant() {
-		return grant;
-	}
-
-	public void setGrant(HashMap<Integer, Node> grant) {
-		this.grant = grant;
-	}
-
-	public HashMap<Integer, Node> getWaitingForYield() {
-		return waitingForYield;
-	}
-
-	public void setWaitingForYield(HashMap<Integer, Node> waitingForYield) {
-		this.waitingForYield = waitingForYield;
-	}
-
-	public HashMap<Integer, Node> getInquireQuorum() {
-		return inquireQuorum;
-	}
-
-	public void setInquireQuorum(HashMap<Integer, Node> inquireQuorum) {
-		this.inquireQuorum = inquireQuorum;
-	}
-
-	public HashMap<Integer, Node> getFailedList() {
-		return failedList;
-	}
-
-	public void setFailedList(HashMap<Integer, Node> failedList) {
-		this.failedList = failedList;
-	}
-	
-	public synchronized void deleteFromGrant(int id)
-	{
-		grant.remove(id);
-	}
-	public synchronized void deleteFromWaitingForYield(int id)
-	{
-		waitingForYield.remove(id);
-	}
-	public synchronized void deleteFromInquireQuorum(int id)
-	{
-		inquireQuorum.remove(id);
-	}
-	public synchronized void deleteFromFailedList(int id)
-	{
-		failedList.remove(id);
-	}
-	
 	
 }

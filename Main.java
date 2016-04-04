@@ -34,12 +34,16 @@ public class Main {
 	static Socket resourceSocket;
 	static ObjectOutputStream resourceOOS;
 	static ObjectInputStream resourceOIS;
-	static Main m;
+	static Main main;
 	static boolean resourceFlag = true;
 	public static HashMap<Integer,Node> hostNameHM;
 	public static HashMap<Integer,Node> sendFailed;
 	ArrayList<Node> queue;
 	MinHeap mn;
+	public HashMap<Integer,Node> grant;
+	public HashMap<Integer,Node> waitingForYield;
+	public HashMap<Integer,Node> inquireQuorum;
+	public HashMap<Integer,Node> failedList;
 
 	public Main()
 	{
@@ -51,17 +55,22 @@ public class Main {
 		queue = new ArrayList<Node>();
 		serverNode = new Node();
 		sendFailed = new HashMap<Integer, Node>();
+		
+		grant = new HashMap<Integer,Node>();
+		waitingForYield = new HashMap<Integer,Node>();
+		inquireQuorum = new HashMap<Integer,Node>();
+		failedList = new HashMap<Integer,Node>();
 	}
 
 	public static void main(String[] args) {
 		int nodeNumber = Integer.parseInt(args[0]);
 		File f = new File(args[1]);
 
-		m = new Main();
-		m.node.setId(nodeNumber);
-		m.readConfigFile(nodeNumber,f);
-		m.resource.setHostname(args[2]);
-		m.resource.setPortNumber(Integer.parseInt(args[3]));
+		main = new Main();
+		main.node.setId(nodeNumber);
+		main.readConfigFile(nodeNumber,f);
+		main.resource.setHostname(args[2]);
+		main.resource.setPortNumber(Integer.parseInt(args[3]));
 		Main.serverNode.setId(Main.serverNodeId);
 		Main.serverNode.setHostname(Main.serverName);
 		Main.serverNode.setPortNumber(Main.serverPortNumber);
@@ -69,7 +78,7 @@ public class Main {
 
 		if(serverNodeId==nodeNumber)
 		{
-			SocketConnectionServer server = new SocketConnectionServer(serverNode,m);
+			SocketConnectionServer server = new SocketConnectionServer(serverNode,main);
 			server.start();
 		}
 		//create socket to the resources and use it later to send cs lock and cs unlock messages
@@ -91,15 +100,15 @@ public class Main {
 			c.start();
 			clientThread.put(n.getId(), c);
 		}*/
-		Client c = new Client(Main.serverNode,m);
+		Client c = new Client(Main.serverNode,main);
 		c.start();
 		clientThread.put(Main.serverNodeId, c);
 		Message temp = new Message();
 		temp.setMessage("hello");
-		temp.setSourceNode(m.node);
+		temp.setSourceNode(main.node);
 		clientThread.get(Main.serverNodeId).sendMessage(temp);
 		try {
-			resourceSocket = new Socket(m.resource.getHostname(), m.resource.getPortNumber());
+			resourceSocket = new Socket(main.resource.getHostname(), main.resource.getPortNumber());
 			resourceOOS = new ObjectOutputStream(resourceSocket.getOutputStream());
 
 		} catch (IOException e1) {
@@ -111,6 +120,7 @@ public class Main {
 		}
 		
 
+
 //		try {
 //			Thread.sleep(3000);
 //
@@ -119,27 +129,28 @@ public class Main {
 //			e.printStackTrace();
 //		}
 		
-		while(m.totalNode!=SocketConnectionServer.counter)
+		while(main.totalNode!=SocketConnectionServer.counter)
 		{		
+
 		}
 
-		while(m.numberOfRequest>0)
+		while(main.numberOfRequest>0)
 			//int counter = 2;
 			//while(counter>0)
 		{
 
 			//if(m.node.getId()!=0)
 			//{
-			m.csEnter();
-			m.csExecution();
-			m.csExit();
+			main.csEnter();
+			main.csExecution();
+			main.csExit();
 			//}
-			m.numberOfRequest = m.numberOfRequest - 1;
+			main.numberOfRequest = main.numberOfRequest - 1;
 			//counter--;
-			double lambda = 1.0 / m.interRequestDelay; 
+			double lambda = 1.0 / main.interRequestDelay; 
 			Random defaultR = new Random();
 			try {        	
-				long l = (long) m.getRandom(defaultR, lambda);
+				long l = (long) main.getRandom(defaultR, lambda);
 				Thread.sleep(l);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -259,7 +270,7 @@ public class Main {
 
 		Message msg = new Message();
 		msg.setMessage("csenter");
-		msg.setSourceNode(m.node);
+		msg.setSourceNode(main.node);
 		try {
 			resourceOOS.writeObject(msg);
 			resourceOOS.flush();
@@ -304,7 +315,7 @@ public class Main {
 	{
 		Message msg = new Message();
 		msg.setMessage("csexit");
-		msg.setSourceNode(m.node);
+		msg.setSourceNode(main.node);
 
 		try {
 			resourceOOS.writeObject(msg);
@@ -316,15 +327,15 @@ public class Main {
 		}
 		for(Node n : node.getQuorum())
 		{
-			node.inquireQuorum.clear();
-			node.failedList.clear();
+			main.inquireQuorum.clear();
+			main.failedList.clear();
 			Message release = new Message();
 			release.setMessage("release");
 			release.setSourceNode(node);
 			release.setDestinationNode(n);
 			clientThread.get(serverNodeId).sendMessage(release);
-			node.inquireQuorum.clear();
-			node.failedList.clear();
+			main.inquireQuorum.clear();
+			main.failedList.clear();
 		}
 		/*for(Integer i : clientThread.keySet())
 		{
@@ -403,9 +414,9 @@ public class Main {
 				}else
 				{
 					//node.getWaitingForYield().add(m.getSourceNode());	//add this req to waitingForYield list
-					node.waitingForYield.put(m.getSourceNode().getId(), m.getSourceNode());
+					main.waitingForYield.put(m.getSourceNode().getId(), m.getSourceNode());
 					System.out.print("Node "+node.getId() + " wait list");
-					for(Integer i: node.waitingForYield.keySet())
+					for(Integer i: main.waitingForYield.keySet())
 					{
 						System.out.print("("+i+")");
 					}
@@ -448,15 +459,15 @@ public class Main {
 		{
 			queue.add(n);
 		}*/
-		sendFailed.putAll(node.waitingForYield);
-		for(Integer i : node.waitingForYield.keySet())
+		sendFailed.putAll(main.waitingForYield);
+		for(Integer i : main.waitingForYield.keySet())
 		{
-			queue.add(node.waitingForYield.get(i));
+			queue.add(main.waitingForYield.get(i));
 			
 		}
 		
 		//node.setWaitingForYield(new ArrayList<Node>());
-		node.waitingForYield.clear();
+		main.waitingForYield.clear();
 		if(queue.size()>0)
 		{
 			System.out.println("Before build heap");
@@ -510,10 +521,10 @@ public class Main {
 			node.setTimestamp(node.getTimestamp()+1);
 		}
 		//node.getGrant().add(m.getSourceNode());
-		node.grant.put(m.getSourceNode().getId(), m.getSourceNode());
+		main.grant.put(m.getSourceNode().getId(), m.getSourceNode());
 		System.out.print("Node "+ node.getId() + " Grant list ");
 		//for(Node n: node.getGrant())
-		for(Integer i : node.grant.keySet())
+		for(Integer i : main.grant.keySet())
 		{
 			System.out.print("(" + i + "),");
 		}
@@ -521,18 +532,18 @@ public class Main {
 		
 	
 		//node.setFailedList(removeElementFromList(node.getFailedList(), m.getSourceNode().getId()));
-		node.failedList.remove(m.getSourceNode().getId());
+		main.failedList.remove(m.getSourceNode().getId());
 
 		//2) check size of grantArrayList 
-		if(node.grant.size() == node.getQuorum().size())
+		if(main.grant.size() == node.getQuorum().size())
 		{
 			synchronized(this)
 			{
 				
 				Main.csEnter = true;
 				//node.setGrant(new ArrayList<Node>());
-				node.grant.clear();
-				node.inquireQuorum.clear();
+				main.grant.clear();
+				main.inquireQuorum.clear();
 				node.setRequestTimestamp(node.getTimestamp());
 			}
 			//go into critical section
@@ -548,13 +559,13 @@ public class Main {
 			node.setTimestamp(node.getTimestamp()+1);
 		}
 		node.setInquireFlag(false);
-		if(node.getWaitingForYield().size()>0)
+		if(main.getWaitingForYield().size()>0)
 		{
 			//for(Node n : node.getWaitingForYield())
-			sendFailed.putAll(node.waitingForYield);
-			for(Integer n : node.waitingForYield.keySet())
+			sendFailed.putAll(main.waitingForYield);
+			for(Integer n : main.waitingForYield.keySet())
 			{
-				queue.add(node.waitingForYield.get(n));
+				queue.add(main.waitingForYield.get(n));
 			}
 			System.out.println("Before build heap");
 			System.out.print("Node "+node.getId() + " PQ ");
@@ -588,7 +599,7 @@ public class Main {
 			
 			
 			node.setTimestamp(node.getTimestamp()+1);
-			node.waitingForYield.clear();
+			main.waitingForYield.clear();
 			Message send = new Message();
 			send.setSourceNode(node);
 			send.setDestinationNode(queue.get(0));
@@ -611,19 +622,19 @@ public class Main {
 		}else {
 			node.setTimestamp(node.getTimestamp()+1);
 		}
-		if(node.getFailedList().size()>0)
+		if(main.getFailedList().size()>0)
 		{	
 			System.out.println("Nilesh");
 			
 			
 			//node.setGrant(removeElementFromList(node.getGrant(), m.getSourceNode().getId()));
-			node.grant.remove(m.getSourceNode().getId());
+			main.grant.remove(m.getSourceNode().getId());
 
 			//node.getInquireQuorum().add(m.getSourceNode());
-			node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
+			main.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
 			System.out.print("Inquire List ");
 			//for(Node n: node.getInquireQuorum())
-			for(Integer n : node.inquireQuorum.keySet())
+			for(Integer n : main.inquireQuorum.keySet())
 			{
 				System.out.print("(" + n + ")");
 			}
@@ -631,27 +642,27 @@ public class Main {
 			
 			node.setTimestamp(node.getTimestamp()+1);
 			
-			for(Integer n : node.inquireQuorum.keySet())
+			for(Integer n : main.inquireQuorum.keySet())
 			{
-				node.failedList.put(n, node.inquireQuorum.get(n));
+				main.failedList.put(n, main.inquireQuorum.get(n));
 				Message m1 = new Message();
-				m1.setDestinationNode(node.inquireQuorum.get(n));
+				m1.setDestinationNode(main.inquireQuorum.get(n));
 				m1.setSourceNode(node);
 				m1.setMessage("yield");
 				clientThread.get(serverNodeId).sendMessage(m1);
 			}
 			
 			//node.setInquireQuorum(new ArrayList<Node>());
-			node.inquireQuorum.clear();
+			main.inquireQuorum.clear();
 		}
 		else
 		{
 			//node.getInquireQuorum().add(m.getSourceNode());
-			node.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
+			main.inquireQuorum.put(m.getSourceNode().getId(), m.getSourceNode());
 			System.out.println("else inquire");
 			System.out.print("Node "+ node.getId() +"Inquire List ");
 			//for(Node n: node.getInquireQuorum())
-			for(Integer n : node.inquireQuorum.keySet())
+			for(Integer n : main.inquireQuorum.keySet())
 			{
 				System.out.print("(" + n + ")");
 			}
@@ -669,30 +680,30 @@ public class Main {
 			node.setTimestamp(node.getTimestamp()+1);
 		}
 		//node.getFailedList().add(m.getSourceNode());
-		node.failedList.put(m.getSourceNode().getId(), m.getSourceNode());
-		System.out.println("Node "+node.getId() + " inside failed : inqQuorum size "+ node.getInquireQuorum().size());
-		if(node.getInquireQuorum().size()>0)
+		main.failedList.put(m.getSourceNode().getId(), m.getSourceNode());
+		System.out.println("Node "+node.getId() + " inside failed : inqQuorum size "+ main.getInquireQuorum().size());
+		if(main.getInquireQuorum().size()>0)
 		{
 			
 			//for(Node n: node.getInquireQuorum())
-			for(Integer n : node.inquireQuorum.keySet())
+			for(Integer n : main.inquireQuorum.keySet())
 			{
 				System.out.println("Node "+node.getId() + " inside failed inq quorum : "+ n);
-				node.failedList.put(n, node.inquireQuorum.get(n));
+				main.failedList.put(n, main.inquireQuorum.get(n));
 				Message send = new Message();
 				node.setTimestamp(node.getTimestamp()+1);
-				send.setDestinationNode(node.inquireQuorum.get(n));
+				send.setDestinationNode(main.inquireQuorum.get(n));
 				send.setSourceNode(node);
 				send.setMessage("yield");
 				clientThread.get(serverNodeId).sendMessage(send);
 				
 				//node.setGrant(removeElementFromList(node.getGrant(), n.getId()));
-				node.grant.remove(n);
+				main.grant.remove(n);
 
 										
 				
 				System.out.print("Node " + node.getId() + " Grant list after deletion ");
-				for(Integer a: node.grant.keySet())
+				for(Integer a: main.grant.keySet())
 				{
 					System.out.print(a + ",");
 				}
@@ -701,11 +712,60 @@ public class Main {
 			}
 			
 			//node.setInquireQuorum(new ArrayList<Node>());
-			node.inquireQuorum.clear();
+			main.inquireQuorum.clear();
 			
 		}
 
 	}
 	
+	public HashMap<Integer, Node> getGrant() {
+		return grant;
+	}
 
+	public void setGrant(HashMap<Integer, Node> grant) {
+		this.grant = grant;
+	}
+
+	public HashMap<Integer, Node> getWaitingForYield() {
+		return waitingForYield;
+	}
+
+	public void setWaitingForYield(HashMap<Integer, Node> waitingForYield) {
+		this.waitingForYield = waitingForYield;
+	}
+
+	public HashMap<Integer, Node> getInquireQuorum() {
+		return inquireQuorum;
+	}
+
+	public void setInquireQuorum(HashMap<Integer, Node> inquireQuorum) {
+		this.inquireQuorum = inquireQuorum;
+	}
+
+	public HashMap<Integer, Node> getFailedList() {
+		return failedList;
+	}
+
+	public void setFailedList(HashMap<Integer, Node> failedList) {
+		this.failedList = failedList;
+	}
+	
+	public synchronized void deleteFromGrant(int id)
+	{
+		grant.remove(id);
+	}
+	public synchronized void deleteFromWaitingForYield(int id)
+	{
+		waitingForYield.remove(id);
+	}
+	public synchronized void deleteFromInquireQuorum(int id)
+	{
+		inquireQuorum.remove(id);
+	}
+	public synchronized void deleteFromFailedList(int id)
+	{
+		failedList.remove(id);
+	}
 }
+	
+
