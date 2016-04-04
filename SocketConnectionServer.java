@@ -20,12 +20,13 @@ public class SocketConnectionServer extends Thread{
 	public volatile static HashMap<Integer,DataOutputStream> clientOS;
 	public static BlockingQueue<String> b = null;
 	private static ServerSocket serverSock;
+	public static int counter =0;
 	public SocketConnectionServer(Node node,Main m)
 	{
 		this.m = m;
 		this.clientOS = new HashMap<Integer, DataOutputStream>();
 		this.node = node;
-		b = new ArrayBlockingQueue<String>(1000);
+		b = new ArrayBlockingQueue<String>(2000);
 	}
 
 	public void run()
@@ -36,51 +37,30 @@ public class SocketConnectionServer extends Thread{
 	public synchronized void go()
 	{
 		try{
-			ClientListenerWriter clw = new ClientListenerWriter(b);
-			clw.start();
-			/*serverSock = new ServerSocket(m.getNode().getPortNumber());
-			System.out.println("Server started " + m.getNode().getId());*/
+			
 			serverSock = new ServerSocket(node.getPortNumber());
 			System.out.println("Server started " + node.getId());
 			Socket sock;
 			while(true)
 			{
 				sock = serverSock.accept();
-
+				counter++;
 				DataOutputStream out = new DataOutputStream(sock.getOutputStream());
 				BufferedReader br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-
 				String message = br.readLine();
 				String[] split = message.split("\\s+");
-				 
-				 
-				 /*
-				 Message msg = new Message();
-				 Node source = new Node(); 
-				 source = Main.hostNameHM.get(Integer.parseInt(split[1]));
-				 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
-				 source.setTimestamp(timestamp);
-				 if(split[0].equalsIgnoreCase("request"))
-				 {
-					 Main.requestTimeStamp.put(Integer.parseInt(split[1]),Integer.parseInt(split[4]));
-					 source.setRequestTimestamp(Integer.parseInt(split[4]));
-				 }
-				 else
-				 {
-					 source.setRequestTimestamp(Main.requestTimeStamp.get(Integer.parseInt(split[1])));
-				 }
-				 
-				 msg.setMessage(split[0]);
-				 msg.setSourceNode(source);
-				 msg.setDestinationNode(destination);*/
-				
-				
-				
+				System.out.println("Mesasge " + split[0]);
 				clientOS.put(Integer.parseInt(split[1]), out);
 				
 				ClientListener clientListener = new ClientListener(br, message, m);
 				clientListener.start();
 				//ois.close();
+				if(m.totalNode == counter)
+				{
+					ClientListenerWriter clw = new ClientListenerWriter(b);
+					clw.start();
+					
+				}
 				
 			}
 

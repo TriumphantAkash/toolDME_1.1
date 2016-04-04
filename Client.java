@@ -15,6 +15,7 @@ public class Client extends Thread{
 	//ObjectInputStream ois;
 	DataOutputStream out;
 	BufferedReader br;
+	public volatile static boolean startExecution = false;
 	
 	 public Client(Node destinationNode, Main main)
 	{
@@ -93,14 +94,7 @@ public class Client extends Thread{
 				 Node source = Main.hostNameHM.get(Integer.parseInt(split[1]));
 				 Node destination = Main.hostNameHM.get(Integer.parseInt(split[2]));
 				 source.setTimestamp(Integer.parseInt(split[3]));
-				 /*if(Main.requestTimeStamp.containsKey(Integer.parseInt(split[1])))
-				 {
-					 source.setRequestTimestamp(Main.requestTimeStamp.get(Integer.parseInt(split[1])));
-				 }
-				 else
-					 source.setRequestTimestamp(1);
-				 //source.setRequestTimestamp(Integer.parseInt(split[4]));
-				 */
+				 
 				 source.setRequestTimestamp(Integer.parseInt(split[4]));
 				 m.setMessage(split[0]);
 				 m.setSourceNode(source);
@@ -130,6 +124,10 @@ public class Client extends Thread{
 					{
 						main.failed(m);
 					}
+					else
+					{
+						startExecution = true;
+					}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -137,20 +135,6 @@ public class Client extends Thread{
 		 }
 	 }
 	 
-	/* public ArrayList<Node> removeElementFromList(ArrayList<Node> al, Integer id)
-		{
-			ArrayList<Node> alm = new ArrayList<Node>();
-			for(Node n : al)
-			{
-				if(n.getId()==id)
-				{
-					continue;
-				}
-				else
-					alm.add(n);
-			}
-			
-			return alm;
-		}*/
+	
 	 
 }
